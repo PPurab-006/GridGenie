@@ -7,18 +7,19 @@ import {
   ForecastEvaluation,
 } from './types/api';
 import { fetchHealth, fetchScenarios, fetchCompare, fetchForecasts } from './api/client';
-import { Navbar } from './components/Navbar';
-import { OverviewCards } from './components/OverviewCards';
-import { DigitalTwin } from './components/DigitalTwin';
-import { ForecastAndDispatchCharts } from './components/ForecastAndDispatchCharts';
-import { StrategyComparison } from './components/StrategyComparison';
-import { DispatchInspector } from './components/DispatchInspector';
-import { BenchmarkLab } from './components/BenchmarkLab';
-import { ScenarioControls } from './components/ScenarioControls';
-import { Cpu, RefreshCw, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Navbar, ActiveView } from './components/Navbar';
+import { LiveOperationsView } from './views/LiveOperationsView';
+import { PerformanceLabView } from './views/PerformanceLabView';
+import { ForecastModelView } from './views/ForecastModelView';
+import { ParameterDrawer } from './components/ParameterDrawer';
+import { Cpu, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 export const App: React.FC = () => {
-  // Configuration State
+  // Navigation View State
+  const [activeView, setActiveView] = useState<ActiveView>('operations');
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+
+  // Microgrid Parameters State
   const [config, setConfig] = useState<MicrogridConfig>({
     scenario_id: 'normal_day',
     battery: {
@@ -54,12 +55,12 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Time-stepped Simulation Playback State
+  // Simulation Clock Playback State
   const [currentHour, setCurrentHour] = useState<number>(12); // Default to midday
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const timerRef = useRef<number | null>(null);
 
-  // Load scenarios on mount
+  // Initialize: load scenarios on mount
   useEffect(() => {
     async function init() {
       try {
@@ -68,14 +69,14 @@ export const App: React.FC = () => {
         const scList = await fetchScenarios();
         setScenarios(scList);
       } catch (err: any) {
-        console.warn('Backend initial connection failed:', err);
+        console.warn('Backend connection warning:', err);
         setBackendOnline(false);
       }
     }
     init();
   }, []);
 
-  // Fetch optimization and forecasts whenever config changes or explicitly triggered
+  // Fetch optimization comparison and forecasts
   const runSimulation = async (customConfig?: MicrogridConfig) => {
     const activeConfig = customConfig || config;
     setLoading(true);
@@ -90,18 +91,18 @@ export const App: React.FC = () => {
       setBackendOnline(true);
     } catch (err: any) {
       console.error('Simulation error:', err);
-      setError(err.message || 'Error executing microgrid optimization');
+      setError(err.message || 'Error executing microgrid simulation');
     } finally {
       setLoading(false);
     }
   };
 
-  // Run on mount and scenario change
+  // Re-run whenever scenario changes
   useEffect(() => {
     runSimulation(config);
   }, [config.scenario_id]);
 
-  // Handle Playback Loop
+  // Simulation Playback Timer (1.4s per hour)
   useEffect(() => {
     if (isPlaying) {
       timerRef.current = window.setInterval(() => {
@@ -117,24 +118,15 @@ export const App: React.FC = () => {
   }, [isPlaying]);
 
   const handleScenarioChange = (scenarioId: ScenarioId) => {
-    setConfig((prev) => ({
-      ...prev,
-      scenario_id: scenarioId,
-    }));
+    setConfig((prev) => ({ ...prev, scenario_id: scenarioId }));
   };
-
-  const handleBenchmarkSelectScenario = (scenarioId: string) => {
-    handleScenarioChange(scenarioId as ScenarioId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const currentOptStep = comparison?.optimized.steps[currentHour] || comparison?.optimized.steps[0];
-  const currentBaseStep = comparison?.baseline.steps[currentHour] || comparison?.baseline.steps[0];
 
   return (
     <div className="min-h-screen bg-[#080C14] text-[#F1F5F9] flex flex-col font-sans">
-      {/* 1. Global Navigation & Playback Controls */}
+      {/* 1. Global Navigation Bar */}
       <Navbar
+        activeView={activeView}
+        onViewChange={setActiveView}
         currentHour={currentHour}
         onHourChange={setCurrentHour}
         isPlaying={isPlaying}
@@ -143,9 +135,20 @@ export const App: React.FC = () => {
         scenarios={scenarios}
         onScenarioChange={handleScenarioChange}
         backendOnline={backendOnline}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
-      {/* Main Container */}
+      {/* 2. Microgrid Parameter Drawer (Modal) */}
+      <ParameterDrawer
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        config={config}
+        onChangeConfig={setConfig}
+        onRunOptimization={() => runSimulation()}
+        loading={loading}
+      />
+
+      {/* 3. Main Workspace Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
         {/* Error notification banner */}
         {error && (
@@ -163,89 +166,59 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* 2. Overview KPI Cards */}
-        {comparison && currentOptStep && currentBaseStep && (
-          <OverviewCards
+        {/* View 1: Live Operations */}
+        {activeView === 'operations' && comparison && (
+          <LiveOperationsView
             comparison={comparison}
-            currentStep={currentOptStep}
-            baselineStep={currentBaseStep}
-          />
-        )}
-
-        {/* 3. Microgrid Digital Twin SVG Single-Line Diagram */}
-        {comparison && currentOptStep && (
-          <DigitalTwin
-            step={currentOptStep}
-            batteryCapacity={config.battery.capacity_kwh}
-          />
-        )}
-
-        {/* 4. Scenario Parameters & Objective Controls Studio */}
-        <ScenarioControls
-          config={config}
-          onChangeConfig={setConfig}
-          onRunOptimization={() => runSimulation()}
-          loading={loading}
-        />
-
-        {/* 5. Forecast & Optimal Dispatch Charts */}
-        {comparison && (
-          <ForecastAndDispatchCharts
-            steps={comparison.optimized.steps}
             currentHour={currentHour}
             onHourClick={setCurrentHour}
-            forecasts={forecasts}
             batteryConfig={config.battery}
           />
         )}
 
-        {/* 6. Baseline vs. Look-Ahead LP Strategy Comparison */}
-        {comparison && (
-          <StrategyComparison
+        {/* View 2: Performance Lab */}
+        {activeView === 'performance' && comparison && (
+          <PerformanceLabView
             comparison={comparison}
-            currentHour={currentHour}
+            selectedScenario={config.scenario_id}
+            scenarios={scenarios}
+            onScenarioChange={handleScenarioChange}
+            currentSeed={config.random_seed}
           />
         )}
 
-        {/* 7. Hourly Dispatch Inspector & Decision Audit Log */}
-        {comparison && (
-          <DispatchInspector
-            comparison={comparison}
-            selectedHour={currentHour}
-            onSelectHour={setCurrentHour}
+        {/* View 3: Forecast & Model */}
+        {activeView === 'forecast' && (
+          <ForecastModelView
+            forecasts={forecasts}
+            selectedScenario={config.scenario_id}
+            scenarios={scenarios}
           />
         )}
-
-        {/* 8. Multi-Scenario Benchmark Laboratory */}
-        <BenchmarkLab
-          currentSeed={config.random_seed}
-          onSelectScenario={handleBenchmarkSelectScenario}
-        />
       </main>
 
-      {/* 9. Technical Footer */}
-      <footer className="border-t border-[#1A263D] bg-[#0A0F1D] py-6 px-4 lg:px-8 mt-12 text-xs font-mono text-[#64748B]">
+      {/* 4. Technical Telemetry Footer */}
+      <footer className="border-t border-[#1A263D] bg-[#0A0F1D] py-5 px-4 lg:px-8 mt-12 text-xs font-mono text-[#64748B]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <div className="h-6 w-6 rounded bg-[#00E599]/10 border border-[#00E599]/30 flex items-center justify-center text-[#00E599]">
               <Cpu className="w-3.5 h-3.5" />
             </div>
             <span>
-              GridMind Digital Twin &bull; IEEE ClimateChain Global Hackathon Submission
+              GridMind V2 &bull; IEEE ClimateChain Global Hackathon Submission
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-[11px] text-[#94A3B8]">
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#00E599]" />
-              Physical Conservation Enforced
+          <div className="flex flex-wrap items-center gap-3.5 text-[11px] text-[#94A3B8]">
+            <span className="flex items-center gap-1 text-[#00E599]">
+              <ShieldCheck className="w-3.5 h-3.5" /> Two-Stage Physical Optimization
             </span>
             <span>&bull;</span>
-            <span>HiGHS LP Solver</span>
+            <span>SciPy HiGHS LP</span>
             <span>&bull;</span>
-            <span>Scikit-Learn ML Forecaster</span>
+            <span>scikit-learn Ridge Forecaster</span>
             <span>&bull;</span>
-            <span className="text-[#64748B]">Deterministic Simulation Only</span>
+            <span className="text-[#64748B]">Simulation Digital Twin</span>
           </div>
         </div>
       </footer>

@@ -1,7 +1,7 @@
 """
 Forecasting module for GridMind.
 Provides transparent, reproducible day-ahead predictions for demand, solar, and wind.
-Uses scikit-learn linear/ridge regression with cyclical time features, solar geometry proxy,
+Uses scikit-learn Ridge regression with cyclical time features, solar geometry proxy,
 and lagged autoregressive inputs. Strictly adheres to chronological training without future data leakage.
 """
 from typing import Dict, List, Tuple
@@ -14,6 +14,7 @@ from ..models.schemas import (
     ForecastPoint,
     MicrogridConfig,
     TimeStepInput,
+    ScenarioId,
 )
 from .simulation import generate_scenario_timeseries
 
@@ -58,18 +59,25 @@ def _build_features(
 def train_and_predict_forecasts(
     config: MicrogridConfig,
     actual_day_steps: List[TimeStepInput],
-) -> Dict[str, ForecastEvaluation]:
+) -> Tuple[List[TimeStepInput], Dict[str, ForecastEvaluation]]:
     """
-    Generates a 7-day chronological historical training sequence ending right before
-    the target evaluation day. Trains independent models for demand, solar, and wind,
-    and returns 24-hour predictions alongside MAE and RMSE metrics.
+    Generates a 7-day chronological historical training sequence representing standard
+    prior operating days. Trains independent Ridge models for demand, solar, and wind,
+    and returns:
+      1. A 24-hour forecasted TimeStepInput sequence available at decision time.
+      2. Comprehensive ForecastEvaluation metrics comparing Ridge against actuals and persistence.
     """
-    # Generate 7 days of training data preceding the scenario day
     history_steps: List[TimeStepInput] = []
     base_seed = config.random_seed * 100
 
+    # Historical training represents standard operating history
+    # For stress test, history reflects pre-stress conditions
+    hist_scenario = ScenarioId.NORMAL_DAY
     for day in range(7):
-        hist_cfg = config.model_copy(update={"random_seed": base_seed + day})
+        hist_cfg = config.model_copy(update={
+            "scenario_id": hist_scenario,
+            "random_seed": base_seed + day,
+        })
         day_steps = generate_scenario_timeseries(hist_cfg)
         for s in day_steps:
             history_steps.append(s)
@@ -108,13 +116,35 @@ def train_and_predict_forecasts(
         if h < 6 or h > 18:
             pred_sol[h] = 0.0
 
-    # Package results
-    results: Dict[str, ForecastEvaluation] = {}
+    # Package results and construct forecast TimeStepInput sequence
+    evaluations: Dict[str, ForecastEvaluation] = {}
+    forecast_steps: List[TimeStepInput] = []
 
-    for series_name, actuals, preds in [
-        ("demand", [s.demand_kw for s in actual_day_steps], pred_dem),
-        ("solar", [s.solar_kw for s in actual_day_steps], pred_sol),
-        ("wind", [s.wind_kw for s in actual_day_steps], pred_wnd),
+    for h in range(24):
+        f_dem = float(round(pred_dem[h], 2))
+        f_sol = float(round(pred_sol[h], 2))
+        f_wnd = float(round(pred_wnd[h], 2))
+        f_ren = float(round(f_sol + f_wnd, 2))
+
+        # Tariffs and carbon intensity are published/known day-ahead by utilities
+        actual_s = actual_day_steps[h]
+        forecast_steps.append(
+            TimeStepInput(
+                hour=h,
+                timestamp=actual_s.timestamp,
+                demand_kw=f_dem,
+                solar_kw=f_sol,
+                wind_kw=f_wnd,
+                renewables_kw=f_ren,
+                grid_price=actual_s.grid_price,
+                grid_carbon_intensity=actual_s.grid_carbon_intensity,
+            )
+        )
+
+    for series_name, actuals, preds, persist in [
+        ("demand", [s.demand_kw for s in actual_day_steps], pred_dem, [s.demand_kw for s in yesterday_steps]),
+        ("solar", [s.solar_kw for s in actual_day_steps], pred_sol, [s.solar_kw for s in yesterday_steps]),
+        ("wind", [s.wind_kw for s in actual_day_steps], pred_wnd, [s.wind_kw for s in yesterday_steps]),
     ]:
         points = []
         for h in range(24):
@@ -133,11 +163,15 @@ def train_and_predict_forecasts(
 
         mae = float(round(mean_absolute_error(actuals, preds), 2))
         rmse = float(round(root_mean_squared_error(actuals, preds), 2))
+        base_mae = float(round(mean_absolute_error(actuals, persist), 2))
+        base_rmse = float(round(root_mean_squared_error(actuals, persist), 2))
 
-        results[series_name] = ForecastEvaluation(
+        evaluations[series_name] = ForecastEvaluation(
             metric_mae=mae,
             metric_rmse=rmse,
+            baseline_mae=base_mae,
+            baseline_rmse=base_rmse,
             points=points,
         )
 
-    return results
+    return forecast_steps, evaluations

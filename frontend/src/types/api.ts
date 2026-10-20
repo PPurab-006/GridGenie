@@ -59,6 +59,8 @@ export interface ForecastPoint {
 export interface ForecastEvaluation {
   metric_mae: number;
   metric_rmse: number;
+  baseline_mae: number;
+  baseline_rmse: number;
   points: ForecastPoint[];
 }
 

@@ -85,6 +85,8 @@ class ForecastPoint(BaseModel):
 class ForecastEvaluation(BaseModel):
     metric_mae: float
     metric_rmse: float
+    baseline_mae: float = 0.0
+    baseline_rmse: float = 0.0
     points: List[ForecastPoint]
 
 

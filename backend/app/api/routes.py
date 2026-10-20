@@ -4,7 +4,7 @@ Provides REST APIs for simulation, forecasting, dispatch optimization, strategy 
 """
 from datetime import datetime, timezone
 from typing import Dict, List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from ..models.schemas import (
     MicrogridConfig,
@@ -32,7 +32,7 @@ def health_check() -> Dict[str, str]:
         "status": "healthy",
         "system": "GridMind Microgrid Digital Twin",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "version": "1.0.0",
+        "version": "2.0.0",
     }
 
 
@@ -52,10 +52,12 @@ def simulate_scenario(config: MicrogridConfig) -> List[TimeStepInput]:
 def get_forecasts(config: MicrogridConfig) -> Dict[str, ForecastEvaluation]:
     """
     Executes the chronological forecasting models (Ridge regression)
-    for demand, solar, and wind, returning 24-hour predictions with MAE and RMSE metrics.
+    for demand, solar, and wind, returning 24-hour predictions with MAE and RMSE metrics
+    compared against actual realized values and a 24-hour persistence baseline.
     """
     actual_steps = generate_scenario_timeseries(config)
-    return train_and_predict_forecasts(config, actual_steps)
+    _, evaluations = train_and_predict_forecasts(config, actual_steps)
+    return evaluations
 
 
 @router.post("/dispatch/baseline", response_model=StrategyResult)
@@ -67,20 +69,26 @@ def dispatch_baseline(config: MicrogridConfig) -> StrategyResult:
 
 @router.post("/dispatch/optimize", response_model=StrategyResult)
 def dispatch_optimize(config: MicrogridConfig) -> StrategyResult:
-    """Executes constrained look-ahead LP optimization on the configured scenario."""
-    time_steps = generate_scenario_timeseries(config)
-    return solve_optimal_dispatch(config, time_steps)
+    """
+    Executes genuine two-stage look-ahead LP optimization on the configured scenario:
+    optimizes dispatch based on day-ahead ML forecasts, and evaluates realization on actuals.
+    """
+    actual_steps = generate_scenario_timeseries(config)
+    forecast_steps, _ = train_and_predict_forecasts(config, actual_steps)
+    return solve_optimal_dispatch(config, actual_steps, forecast_steps=forecast_steps)
 
 
 @router.post("/compare", response_model=ComparisonResult)
 def compare_dispatch_strategies(config: MicrogridConfig) -> ComparisonResult:
     """
-    Runs both Baseline and GridMind Optimizer on identical scenario inputs and parameters,
+    Runs both Baseline and GridMind Two-Stage Optimizer on identical scenario inputs and parameters,
     computing side-by-side KPIs, cost savings, carbon reduction, and peak shaving.
     """
-    time_steps = generate_scenario_timeseries(config)
-    baseline_res = run_baseline_dispatch(config, time_steps)
-    optimized_res = solve_optimal_dispatch(config, time_steps)
+    actual_steps = generate_scenario_timeseries(config)
+    forecast_steps, _ = train_and_predict_forecasts(config, actual_steps)
+
+    baseline_res = run_baseline_dispatch(config, actual_steps)
+    optimized_res = solve_optimal_dispatch(config, actual_steps, forecast_steps=forecast_steps)
 
     meta = SCENARIO_METADATA.get(config.scenario_id, {
         "name": config.scenario_id.value,
@@ -110,9 +118,11 @@ def get_benchmarks(seed: int = 42) -> BenchmarkTableResponse:
 
     for s_id in [ScenarioId.NORMAL_DAY, ScenarioId.CLOUD_SHOCK, ScenarioId.EVENING_PEAK, ScenarioId.STRESS_TEST]:
         cfg = MicrogridConfig(scenario_id=s_id, random_seed=seed)
-        steps = generate_scenario_timeseries(cfg)
-        b_res = run_baseline_dispatch(cfg, steps)
-        o_res = solve_optimal_dispatch(cfg, steps)
+        actual_steps = generate_scenario_timeseries(cfg)
+        forecast_steps, _ = train_and_predict_forecasts(cfg, actual_steps)
+
+        b_res = run_baseline_dispatch(cfg, actual_steps)
+        o_res = solve_optimal_dispatch(cfg, actual_steps, forecast_steps=forecast_steps)
         meta = SCENARIO_METADATA[s_id]
 
         comp = compare_strategies(
