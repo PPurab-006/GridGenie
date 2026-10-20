@@ -3,7 +3,6 @@ import { ForecastEvaluation, ScenarioSummary, ScenarioId } from '../types/api';
 import {
   Brain,
   Cpu,
-  Sparkles,
   Info,
   CheckCircle2,
   AlertTriangle,
@@ -11,6 +10,7 @@ import {
   Wind,
   Building2,
   ShieldCheck,
+  TrendingUp,
 } from 'lucide-react';
 import {
   LineChart,
@@ -37,39 +37,47 @@ export const ForecastModelView: React.FC<ForecastModelViewProps> = ({
   const currentScenarioMeta = scenarios.find((s) => s.id === selectedScenario);
 
   // Prepare chart data for Demand, Solar, Wind
-  const demandData = forecasts?.demand?.points.map((p) => ({
-    timestamp: p.timestamp,
-    'Realized Demand (Actual)': p.actual,
-    'Day-Ahead Forecast (Decision Time)': p.forecast,
-  })) || [];
+  const demandData =
+    forecasts?.demand?.points.map((p) => ({
+      timestamp: p.timestamp,
+      'Realized Demand (Actual)': p.actual,
+      'Day-Ahead Forecast (Decision Time)': p.forecast,
+    })) || [];
 
-  const solarData = forecasts?.solar?.points.map((p) => ({
-    timestamp: p.timestamp,
-    'Realized Solar (Actual)': p.actual,
-    'Day-Ahead Forecast (Decision Time)': p.forecast,
-  })) || [];
+  const solarData =
+    forecasts?.solar?.points.map((p) => ({
+      timestamp: p.timestamp,
+      'Realized Solar (Actual)': p.actual,
+      'Day-Ahead Forecast (Decision Time)': p.forecast,
+    })) || [];
 
-  const windData = forecasts?.wind?.points.map((p) => ({
-    timestamp: p.timestamp,
-    'Realized Wind (Actual)': p.actual,
-    'Day-Ahead Forecast (Decision Time)': p.forecast,
-  })) || [];
+  const windData =
+    forecasts?.wind?.points.map((p) => ({
+      timestamp: p.timestamp,
+      'Realized Wind (Actual)': p.actual,
+      'Day-Ahead Forecast (Decision Time)': p.forecast,
+    })) || [];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-150">
+    <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header Banner */}
-      <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <Brain className="w-5 h-5 text-[#00D8F6]" />
-            Forecasting Engine & Model Audit Laboratory
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E6EFEA] border border-[#CCDCD2] text-xs font-semibold text-[#1D3D2D] mb-1.5">
+            <Brain className="w-3.5 h-3.5 text-[#28533D]" />
+            Machine Learning Intelligence Audit
+          </div>
+          <h2 className="font-editorial text-2xl sm:text-3xl font-bold text-[#171E1A] tracking-tight">
+            Forecasting Engine & Optimizer Architecture
           </h2>
-          <p className="text-xs text-[#94A3B8]">
-            Transparent evaluation of the scikit-learn day-ahead forecaster and SciPy HiGHS LP optimizer
+          <p className="text-xs sm:text-sm text-[#4A5B52] mt-0.5">
+            Full scientific disclosure of what the ML model predicts, how the LP optimizer acts, and
+            provenance of training data.
           </p>
         </div>
-        <div className="text-xs font-mono px-3 py-1.5 bg-[#141D30] border border-[#1A263D] rounded-lg text-[#CBD5E1]">
-          Scenario: <strong className="text-white">{currentScenarioMeta?.name || selectedScenario}</strong>
+        <div className="text-xs px-3.5 py-2 bg-[#F0EDE4] border border-[#DCD5C5] rounded-lg text-[#171E1A] shrink-0">
+          <span className="text-[#788A80] block text-[10px] uppercase font-semibold">Active Scenario</span>
+          <span className="font-semibold text-sm">{currentScenarioMeta?.name || selectedScenario}</span>
         </div>
       </div>
 
@@ -77,214 +85,324 @@ export const ForecastModelView: React.FC<ForecastModelViewProps> = ({
       {forecasts && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Demand Scorecard */}
-          <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-4">
+          <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-5 shadow-sm hover:border-[#1D3D2D] transition-colors">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono font-bold text-purple-400 flex items-center gap-1.5">
-                <Building2 className="w-4 h-4" /> Electrical Demand Model
+              <span className="text-xs font-semibold uppercase text-amber-800 flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-amber-700" /> Facility Demand Model
               </span>
-              <span className="text-[10px] font-mono text-[#64748B]">24h Horizon</span>
+              <span className="text-[11px] text-[#788A80] font-mono">24h Horizon</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-2">
-              <div className="p-2.5 bg-[#141D30] rounded-lg border border-[#1A263D]">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Ridge MAE</span>
-                <span className="text-lg font-bold font-mono text-white">{forecasts.demand.metric_mae} kW</span>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="p-3 bg-[#FFFFFF] rounded-lg border border-[#E3DED2]">
+                <span className="text-[10px] uppercase text-[#788A80] block font-semibold">
+                  Ridge MAE
+                </span>
+                <span className="text-xl font-bold font-mono text-[#171E1A] mt-0.5 block">
+                  {forecasts.demand.metric_mae} <span className="text-xs font-normal">kW</span>
+                </span>
               </div>
-              <div className="p-2.5 bg-[#141D30] rounded-lg border border-[#1A263D]">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Ridge RMSE</span>
-                <span className="text-lg font-bold font-mono text-white">{forecasts.demand.metric_rmse} kW</span>
+              <div className="p-3 bg-[#FFFFFF] rounded-lg border border-[#E3DED2]">
+                <span className="text-[10px] uppercase text-[#788A80] block font-semibold">
+                  Ridge RMSE
+                </span>
+                <span className="text-xl font-bold font-mono text-[#171E1A] mt-0.5 block">
+                  {forecasts.demand.metric_rmse} <span className="text-xs font-normal">kW</span>
+                </span>
               </div>
             </div>
-            <div className="text-[11px] font-mono text-[#94A3B8] flex justify-between pt-2 border-t border-[#1A263D]">
+            <div className="text-xs text-[#5D7C6C] pt-2 border-t border-[#E3ECE6] flex justify-between font-mono">
               <span>Persistence Baseline:</span>
-              <span className="text-white font-medium">MAE {forecasts.demand.baseline_mae} kW / RMSE {forecasts.demand.baseline_rmse} kW</span>
+              <span className="text-[#171E1A] font-semibold">
+                MAE {forecasts.demand.baseline_mae} kW
+              </span>
             </div>
           </div>
 
           {/* Solar Scorecard */}
-          <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-4">
+          <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-5 shadow-sm hover:border-[#1D3D2D] transition-colors">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
-                <Sun className="w-4 h-4" /> Solar PV Forecaster
+              <span className="text-xs font-semibold uppercase text-amber-800 flex items-center gap-1.5">
+                <Sun className="w-4 h-4 text-amber-700" /> Solar PV Model
               </span>
-              <span className="text-[10px] font-mono text-[#64748B]">24h Horizon</span>
+              <span className="text-[11px] text-[#788A80] font-mono">24h Horizon</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-2">
-              <div className="p-2.5 bg-[#141D30] rounded-lg border border-[#1A263D]">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Ridge MAE</span>
-                <span className="text-lg font-bold font-mono text-white">{forecasts.solar.metric_mae} kW</span>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="p-3 bg-[#FFFFFF] rounded-lg border border-[#E3DED2]">
+                <span className="text-[10px] uppercase text-[#788A80] block font-semibold">
+                  Ridge MAE
+                </span>
+                <span className="text-xl font-bold font-mono text-[#171E1A] mt-0.5 block">
+                  {forecasts.solar.metric_mae} <span className="text-xs font-normal">kW</span>
+                </span>
               </div>
-              <div className="p-2.5 bg-[#141D30] rounded-lg border border-[#1A263D]">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Ridge RMSE</span>
-                <span className="text-lg font-bold font-mono text-white">{forecasts.solar.metric_rmse} kW</span>
+              <div className="p-3 bg-[#FFFFFF] rounded-lg border border-[#E3DED2]">
+                <span className="text-[10px] uppercase text-[#788A80] block font-semibold">
+                  Ridge RMSE
+                </span>
+                <span className="text-xl font-bold font-mono text-[#171E1A] mt-0.5 block">
+                  {forecasts.solar.metric_rmse} <span className="text-xs font-normal">kW</span>
+                </span>
               </div>
             </div>
-            <div className="text-[11px] font-mono text-[#94A3B8] flex justify-between pt-2 border-t border-[#1A263D]">
+            <div className="text-xs text-[#5D7C6C] pt-2 border-t border-[#E3ECE6] flex justify-between font-mono">
               <span>Persistence Baseline:</span>
-              <span className="text-white font-medium">MAE {forecasts.solar.baseline_mae} kW / RMSE {forecasts.solar.baseline_rmse} kW</span>
+              <span className="text-[#171E1A] font-semibold">
+                MAE {forecasts.solar.baseline_mae} kW
+              </span>
             </div>
           </div>
 
           {/* Wind Scorecard */}
-          <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-4">
+          <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-5 shadow-sm hover:border-[#1D3D2D] transition-colors">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono font-bold text-[#00D8F6] flex items-center gap-1.5">
-                <Wind className="w-4 h-4" /> Wind Turbine Forecaster
+              <span className="text-xs font-semibold uppercase text-cyan-800 flex items-center gap-1.5">
+                <Wind className="w-4 h-4 text-cyan-700" /> Wind Turbine Model
               </span>
-              <span className="text-[10px] font-mono text-[#64748B]">24h Horizon</span>
+              <span className="text-[11px] text-[#788A80] font-mono">24h Horizon</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-2">
-              <div className="p-2.5 bg-[#141D30] rounded-lg border border-[#1A263D]">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Ridge MAE</span>
-                <span className="text-lg font-bold font-mono text-white">{forecasts.wind.metric_mae} kW</span>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="p-3 bg-[#FFFFFF] rounded-lg border border-[#E3DED2]">
+                <span className="text-[10px] uppercase text-[#788A80] block font-semibold">
+                  Ridge MAE
+                </span>
+                <span className="text-xl font-bold font-mono text-[#171E1A] mt-0.5 block">
+                  {forecasts.wind.metric_mae} <span className="text-xs font-normal">kW</span>
+                </span>
               </div>
-              <div className="p-2.5 bg-[#141D30] rounded-lg border border-[#1A263D]">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Ridge RMSE</span>
-                <span className="text-lg font-bold font-mono text-white">{forecasts.wind.metric_rmse} kW</span>
+              <div className="p-3 bg-[#FFFFFF] rounded-lg border border-[#E3DED2]">
+                <span className="text-[10px] uppercase text-[#788A80] block font-semibold">
+                  Ridge RMSE
+                </span>
+                <span className="text-xl font-bold font-mono text-[#171E1A] mt-0.5 block">
+                  {forecasts.wind.metric_rmse} <span className="text-xs font-normal">kW</span>
+                </span>
               </div>
             </div>
-            <div className="text-[11px] font-mono text-[#94A3B8] flex justify-between pt-2 border-t border-[#1A263D]">
+            <div className="text-xs text-[#5D7C6C] pt-2 border-t border-[#E3ECE6] flex justify-between font-mono">
               <span>Persistence Baseline:</span>
-              <span className="text-white font-medium">MAE {forecasts.wind.baseline_mae} kW / RMSE {forecasts.wind.baseline_rmse} kW</span>
+              <span className="text-[#171E1A] font-semibold">
+                MAE {forecasts.wind.baseline_mae} kW
+              </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3 Separate Readable Forecast vs Actual Charts */}
-      <div className="space-y-5">
-        {/* Chart 1: Electrical Demand */}
-        <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-5">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#1A263D]">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-purple-400" />
-              Electrical Demand: Day-Ahead Forecast vs. Realized Load
+      {/* 3 Separate Visual Forecast Comparison Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Chart 1: Demand Forecast vs Realized */}
+        <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-5 shadow-sm">
+          <div className="pb-3 mb-3 border-b border-[#E3DED2]">
+            <h3 className="font-editorial text-base font-bold text-[#171E1A] flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-amber-700" /> Demand: Forecast vs. Actual
             </h3>
-            <span className="text-[11px] font-mono text-[#94A3B8]">Unit: kW &bull; 24h Horizon</span>
+            <p className="text-xs text-[#5D7C6C]">Facility active electrical load profile</p>
           </div>
-          <div className="w-full h-64">
+          <div className="w-full h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={demandData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1A263D" vertical={false} />
-                <XAxis dataKey="timestamp" stroke="#64748B" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748B" fontSize={11} tickLine={false} unit=" kW" />
+              <LineChart data={demandData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E6E0D4" vertical={false} />
+                <XAxis dataKey="timestamp" stroke="#788A80" fontSize={10} tickLine={false} />
+                <YAxis stroke="#788A80" fontSize={10} tickLine={false} unit=" kW" />
                 <Tooltip />
-                <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px', fontFamily: 'JetBrains Mono' }} />
-                <Line type="monotone" dataKey="Realized Demand (Actual)" stroke="#A78BFA" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="Day-Ahead Forecast (Decision Time)" stroke="#DDD6FE" strokeDasharray="4 4" strokeWidth={2} dot={false} />
+                <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'Plus Jakarta Sans' }} />
+                <Line
+                  type="monotone"
+                  dataKey="Realized Demand (Actual)"
+                  stroke="#171E1A"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Day-Ahead Forecast (Decision Time)"
+                  stroke="#D97706"
+                  strokeDasharray="4 4"
+                  strokeWidth={2}
+                  dot={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Chart 2: Solar Generation */}
-        <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-5">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#1A263D]">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Sun className="w-4 h-4 text-amber-400" />
-              Solar PV Generation: Day-Ahead Forecast vs. Realized Output
+        {/* Chart 2: Solar Forecast vs Realized */}
+        <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-5 shadow-sm">
+          <div className="pb-3 mb-3 border-b border-[#E3DED2]">
+            <h3 className="font-editorial text-base font-bold text-[#171E1A] flex items-center gap-1.5">
+              <Sun className="w-4 h-4 text-amber-700" /> Solar: Forecast vs. Actual
             </h3>
-            <span className="text-[11px] font-mono text-[#94A3B8]">Unit: kW &bull; 24h Horizon</span>
+            <p className="text-xs text-[#5D7C6C]">Solar PV diurnal generation profile</p>
           </div>
-          <div className="w-full h-64">
+          <div className="w-full h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={solarData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1A263D" vertical={false} />
-                <XAxis dataKey="timestamp" stroke="#64748B" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748B" fontSize={11} tickLine={false} unit=" kW" />
+              <LineChart data={solarData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E6E0D4" vertical={false} />
+                <XAxis dataKey="timestamp" stroke="#788A80" fontSize={10} tickLine={false} />
+                <YAxis stroke="#788A80" fontSize={10} tickLine={false} unit=" kW" />
                 <Tooltip />
-                <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px', fontFamily: 'JetBrains Mono' }} />
-                <Line type="monotone" dataKey="Realized Solar (Actual)" stroke="#FBBF24" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="Day-Ahead Forecast (Decision Time)" stroke="#FDE68A" strokeDasharray="4 4" strokeWidth={2} dot={false} />
+                <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'Plus Jakarta Sans' }} />
+                <Line
+                  type="monotone"
+                  dataKey="Realized Solar (Actual)"
+                  stroke="#171E1A"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Day-Ahead Forecast (Decision Time)"
+                  stroke="#D97706"
+                  strokeDasharray="4 4"
+                  strokeWidth={2}
+                  dot={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Chart 3: Wind Generation */}
-        <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-5">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#1A263D]">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Wind className="w-4 h-4 text-[#00D8F6]" />
-              Wind Generation: Day-Ahead Forecast vs. Realized Output
+        {/* Chart 3: Wind Forecast vs Realized */}
+        <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-5 shadow-sm">
+          <div className="pb-3 mb-3 border-b border-[#E3DED2]">
+            <h3 className="font-editorial text-base font-bold text-[#171E1A] flex items-center gap-1.5">
+              <Wind className="w-4 h-4 text-cyan-700" /> Wind: Forecast vs. Actual
             </h3>
-            <span className="text-[11px] font-mono text-[#94A3B8]">Unit: kW &bull; 24h Horizon</span>
+            <p className="text-xs text-[#5D7C6C]">Wind turbine generation profile</p>
           </div>
-          <div className="w-full h-64">
+          <div className="w-full h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={windData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1A263D" vertical={false} />
-                <XAxis dataKey="timestamp" stroke="#64748B" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748B" fontSize={11} tickLine={false} unit=" kW" />
+              <LineChart data={windData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E6E0D4" vertical={false} />
+                <XAxis dataKey="timestamp" stroke="#788A80" fontSize={10} tickLine={false} />
+                <YAxis stroke="#788A80" fontSize={10} tickLine={false} unit=" kW" />
                 <Tooltip />
-                <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '11px', fontFamily: 'JetBrains Mono' }} />
-                <Line type="monotone" dataKey="Realized Wind (Actual)" stroke="#00D8F6" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="Day-Ahead Forecast (Decision Time)" stroke="#A5F3FC" strokeDasharray="4 4" strokeWidth={2} dot={false} />
+                <Legend wrapperStyle={{ fontSize: '10px', fontFamily: 'Plus Jakarta Sans' }} />
+                <Line
+                  type="monotone"
+                  dataKey="Realized Wind (Actual)"
+                  stroke="#171E1A"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Day-Ahead Forecast (Decision Time)"
+                  stroke="#0284C7"
+                  strokeDasharray="4 4"
+                  strokeWidth={2}
+                  dot={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Model Cards & Architecture Explanations */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* ML Model Card */}
-        <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-5">
-          <div className="flex items-center gap-2 pb-3 mb-3 border-b border-[#1A263D]">
-            <Brain className="w-4 h-4 text-[#00D8F6]" />
-            <h3 className="text-sm font-bold text-white">ML Forecaster Model Card</h3>
+      {/* Model Transparency Cards: Machine Learning Model Card vs Optimization Solver Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* 1. Machine Learning Model Card */}
+        <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 pb-3 mb-4 border-b border-[#E3DED2]">
+            <Brain className="w-5 h-5 text-[#1D3D2D]" />
+            <h3 className="font-editorial text-lg font-bold text-[#171E1A]">
+              Forecasting Model Card: Ridge Regression
+            </h3>
           </div>
-          <div className="space-y-3 text-xs font-mono text-[#CBD5E1]">
-            <div>
-              <span className="text-[#64748B] block">Estimator:</span>
-              <strong className="text-white">scikit-learn Ridge Regression (alpha=1.0)</strong>
-            </div>
-            <div>
-              <span className="text-[#64748B] block">Input Features (6):</span>
-              <span className="text-[#94A3B8]">sin(2πh/24), cos(2πh/24), Clear-sky solar geometry envelope, lag-24 demand, lag-24 solar, lag-24 wind.</span>
-            </div>
-            <div>
-              <span className="text-[#64748B] block">Training Data Source:</span>
-              <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded mt-1 text-amber-300">
-                ⚠️ <strong>100% Synthetic Simulated Output:</strong> Generated via physical diurnal equations across 7 chronological days (144 training steps). Not utility field meter data.
+
+          <div className="space-y-3 text-xs leading-relaxed text-[#384E43]">
+            <div className="grid grid-cols-2 gap-2 bg-[#FFFFFF] p-3 rounded-lg border border-[#E3DED2]">
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Estimator</span>
+                <span className="font-mono font-bold text-[#171E1A]">sklearn.linear_model.Ridge</span>
+              </div>
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Hyperparameters</span>
+                <span className="font-mono text-[#171E1A]">alpha=1.0, fit_intercept=True</span>
+              </div>
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Features</span>
+                <span className="font-mono text-[#171E1A]">sin/cos hour, solar envelope, lag y[t-24]</span>
+              </div>
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Training Horizon</span>
+                <span className="font-mono text-[#171E1A]">168 hours (7 days rolling)</span>
               </div>
             </div>
-            <div>
-              <span className="text-[#64748B] block">Chronological Integrity:</span>
-              <span className="text-[#00E599]">Strict zero future leakage. Only past historical steps are seen at decision time.</span>
+
+            <div className="p-3 bg-[#E6EFEA] border border-[#CCDCD2] rounded-lg text-xs text-[#1D3D2D]">
+              <div className="flex items-center gap-1.5 font-bold mb-1">
+                <CheckCircle2 className="w-4 h-4 text-[#1D3D2D]" />
+                Zero Look-Ahead Leakage
+              </div>
+              <p>
+                All input features are strictly known at decision time (t = 0). No future target
+                information or realization labels leak into the feature matrix.
+              </p>
             </div>
-            <div>
-              <span className="text-[#64748B] block">Known Limitations:</span>
-              <span className="text-[#94A3B8]">Linear model cannot predict sudden convective cloud shocks or equipment outages that were unobserved in prior days.</span>
+
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+              <div className="flex items-center gap-1.5 font-bold mb-1">
+                <AlertTriangle className="w-4 h-4 text-amber-700" />
+                Scientific Data Provenance Disclosure
+              </div>
+              <p>
+                Training data are <strong>100% synthetic</strong>, produced deterministically by the
+                microgrid physics equations. Performance metrics should be interpreted as demonstrating
+                the mathematical pipeline rather than empirical field utility accuracy.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Optimizer Card */}
-        <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl p-5">
-          <div className="flex items-center gap-2 pb-3 mb-3 border-b border-[#1A263D]">
-            <Cpu className="w-4 h-4 text-[#00E599]" />
-            <h3 className="text-sm font-bold text-white">SciPy HiGHS Optimizer Architecture</h3>
+        {/* 2. Mathematical Optimization Architecture Card */}
+        <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 pb-3 mb-4 border-b border-[#E3DED2]">
+            <Cpu className="w-5 h-5 text-[#1D3D2D]" />
+            <h3 className="font-editorial text-lg font-bold text-[#171E1A]">
+              Dispatch Optimization: SciPy HiGHS Solver
+            </h3>
           </div>
-          <div className="space-y-3 text-xs font-mono text-[#CBD5E1]">
-            <div>
-              <span className="text-[#64748B] block">Mathematical Paradigm:</span>
-              <strong className="text-white">Constrained Linear Programming (SciPy linprog / HiGHS Dual Simplex)</strong>
-              <p className="text-[11px] text-[#94A3B8] mt-0.5">Mathematical optimization engine, NOT a trained machine learning model.</p>
-            </div>
-            <div>
-              <span className="text-[#64748B] block">Decision Horizon:</span>
-              <span className="text-[#94A3B8]">168 continuous variables across 24 hours (P_imp, P_exp, P_ch, P_dis, P_curt, P_uns, E_batt).</span>
-            </div>
-            <div>
-              <span className="text-[#64748B] block">Physical Constraints:</span>
-              <span className="text-[#94A3B8]">Active power balance, energy conservation, battery SoC [15%, 95%], inverter power ratings (40 kW), 90.25% round-trip efficiency, degradation penalty.</span>
-            </div>
-            <div>
-              <span className="text-[#64748B] block">Two-Stage Forecast Integration:</span>
-              <div className="p-2 bg-[#00E599]/10 border border-[#00E599]/20 rounded mt-1 text-[#00E599]">
-                ✓ <strong>Stage 1:</strong> Optimizes battery schedule on ML Forecasts.<br />
-                ✓ <strong>Stage 2:</strong> Evaluates real-time physical realization on actual weather & load.
+
+          <div className="space-y-3 text-xs leading-relaxed text-[#384E43]">
+            <div className="grid grid-cols-2 gap-2 bg-[#FFFFFF] p-3 rounded-lg border border-[#E3DED2]">
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Solver Type</span>
+                <span className="font-mono font-bold text-[#171E1A]">Linear Program (HiGHS Simplex)</span>
               </div>
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Decision Variables</span>
+                <span className="font-mono text-[#171E1A]">168 continuous variables (24h horizon)</span>
+              </div>
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Primary Objective</span>
+                <span className="font-mono text-[#171E1A]">Min OpCost + Degradation + Penalty</span>
+              </div>
+              <div>
+                <span className="text-[#788A80] uppercase text-[10px] font-semibold block">Real-Time Balancing</span>
+                <span className="font-mono text-[#171E1A]">Governor reserve + grid balance</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#E6EFEA] border border-[#CCDCD2] rounded-lg text-xs text-[#1D3D2D]">
+              <div className="flex items-center gap-1.5 font-bold mb-1">
+                <ShieldCheck className="w-4 h-4 text-[#1D3D2D]" />
+                Two-Stage Decision Formulation
+              </div>
+              <p>
+                <strong>Stage 1 (Day-Ahead):</strong> Solves the 24-hour commitment plan on ML forecasts.<br />
+                <strong>Stage 2 (Real-Time):</strong> Dispatches against realized scenario actuals, using battery reserve and grid support to absorb forecast error while strictly honoring physical limits.
+              </p>
+            </div>
+
+            <div className="p-3 bg-[#F0EDE4] border border-[#DCD5C5] rounded-lg text-xs text-[#384E43]">
+              <div className="flex items-center gap-1.5 font-bold mb-1">
+                <Info className="w-4 h-4 text-[#5D7C6C]" />
+                Hard Physical Constraints Enforced
+              </div>
+              <p>
+                Strict nodal power balance &bull; Battery SoC bounds [20%, 90%] &bull; C-rate charging/discharging power limits (25 kW) &bull; Terminal SoC target (&ge; 50%) &bull; Non-simultaneous charge/discharge &bull; Explicit unserved load accounting.
+              </p>
             </div>
           </div>
         </div>

@@ -4,6 +4,8 @@
 
 export type ScenarioId = 'normal_day' | 'cloud_shock' | 'evening_peak' | 'stress_test';
 
+export type AssetId = 'solar' | 'wind' | 'battery' | 'facility' | 'grid';
+
 export interface BatteryConfig {
   capacity_kwh: number;
   max_charge_kw: number;

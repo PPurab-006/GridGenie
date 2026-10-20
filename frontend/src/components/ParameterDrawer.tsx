@@ -1,6 +1,6 @@
 import React from 'react';
 import { MicrogridConfig } from '../types/api';
-import { X, Sliders, RefreshCw, Battery, Zap, Leaf } from 'lucide-react';
+import { X, Sliders, RefreshCw, Battery, Leaf } from 'lucide-react';
 
 interface ParameterDrawerProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
           capacity_kwh: 100.0,
           max_charge_kw: 40.0,
           max_discharge_kw: 40.0,
-          initial_soc: 0.40,
+          initial_soc: 0.4,
         },
         optimization: { ...config.optimization, carbon_weight: 0.0 },
       });
@@ -56,7 +56,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
           capacity_kwh: 200.0,
           max_charge_kw: 80.0,
           max_discharge_kw: 80.0,
-          initial_soc: 0.50,
+          initial_soc: 0.5,
         },
       });
     } else if (preset === 'lean') {
@@ -67,7 +67,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
           capacity_kwh: 40.0,
           max_charge_kw: 20.0,
           max_discharge_kw: 20.0,
-          initial_soc: 0.30,
+          initial_soc: 0.3,
         },
       });
     } else if (preset === 'carbon') {
@@ -82,23 +82,27 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#0F1626] border border-[#1A263D] rounded-xl max-w-xl w-full p-6 shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-2xl max-w-xl w-full p-6 shadow-2xl relative">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#1A263D]">
+        <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#E3DED2]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-[#00E599]/10 rounded-lg text-[#00E599]">
+            <div className="p-2 bg-[#E6EFEA] rounded-lg text-[#1D3D2D]">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight">Microgrid Parameter Studio</h2>
-              <p className="text-xs text-[#94A3B8]">Adjust physical storage ratings & optimization weights</p>
+              <h2 className="font-editorial text-xl font-bold text-[#171E1A] tracking-tight">
+                Microgrid Configuration Studio
+              </h2>
+              <p className="text-xs text-[#5D7C6C]">
+                Adjust storage ratings, solar/wind capacities, and carbon optimization weights
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-[#94A3B8] hover:text-white hover:bg-[#1A263D] rounded-lg transition"
-            aria-label="Close"
+            className="p-1.5 text-[#788A80] hover:text-[#171E1A] hover:bg-[#EAE6DB] rounded-lg transition-colors"
+            aria-label="Close configuration"
           >
             <X className="w-5 h-5" />
           </button>
@@ -106,50 +110,48 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
 
         {/* Quick Presets */}
         <div className="mb-5">
-          <span className="text-[11px] font-mono uppercase text-[#64748B] block mb-2">Quick Presets:</span>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <label className="text-xs font-semibold uppercase tracking-wider text-[#5D7C6C] mb-2 block">
+            System Architecture Presets
+          </label>
+          <div className="grid grid-cols-4 gap-2">
             <button
               onClick={() => applyPreset('default')}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-mono bg-[#141D30] border border-[#1A263D] hover:border-[#2A3B5C] text-[#CBD5E1] transition"
+              className="px-2.5 py-1.5 bg-[#FFFFFF] border border-[#D5E0D7] hover:border-[#1D3D2D] text-xs font-medium text-[#171E1A] rounded-lg transition-colors shadow-sm text-center"
             >
-              Standard (100 kWh)
+              Default (100 kWh)
             </button>
             <button
               onClick={() => applyPreset('heavy')}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-mono bg-[#141D30] border border-[#1A263D] hover:border-[#2A3B5C] text-[#CBD5E1] transition"
+              className="px-2.5 py-1.5 bg-[#FFFFFF] border border-[#D5E0D7] hover:border-[#1D3D2D] text-xs font-medium text-[#171E1A] rounded-lg transition-colors shadow-sm text-center"
             >
               Heavy (200 kWh)
             </button>
             <button
               onClick={() => applyPreset('lean')}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-mono bg-[#141D30] border border-[#1A263D] hover:border-[#2A3B5C] text-[#CBD5E1] transition"
+              className="px-2.5 py-1.5 bg-[#FFFFFF] border border-[#D5E0D7] hover:border-[#1D3D2D] text-xs font-medium text-[#171E1A] rounded-lg transition-colors shadow-sm text-center"
             >
               Lean (40 kWh)
             </button>
             <button
               onClick={() => applyPreset('carbon')}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-mono border flex items-center justify-center gap-1 transition ${
-                config.optimization.carbon_weight > 0
-                  ? 'bg-[#00D8F6]/20 border-[#00D8F6]/40 text-[#00D8F6] font-semibold'
-                  : 'bg-[#141D30] border-[#1A263D] text-[#CBD5E1]'
-              }`}
+              className="px-2.5 py-1.5 bg-[#FFFFFF] border border-[#D5E0D7] hover:border-[#1D3D2D] text-xs font-medium text-[#171E1A] rounded-lg transition-colors shadow-sm text-center"
             >
-              <Leaf className="w-3.5 h-3.5" />
-              Carbon-Aware
+              High Carbon Tax
             </button>
           </div>
         </div>
 
-        {/* Sliders Grid */}
+        {/* Sliders Form */}
         <div className="space-y-4 mb-6">
-          {/* Capacity */}
-          <div className="bg-[#141D30] border border-[#1A263D] p-3 rounded-lg">
-            <div className="flex justify-between text-xs font-mono mb-2">
-              <span className="text-[#94A3B8] flex items-center gap-1.5">
-                <Battery className="w-4 h-4 text-[#00E599]" />
-                Battery Storage Capacity
+          {/* Battery Capacity */}
+          <div className="p-3 bg-[#FFFFFF] rounded-xl border border-[#E3DED2]">
+            <div className="flex justify-between text-xs font-medium text-[#171E1A] mb-1.5">
+              <span className="flex items-center gap-1.5 text-[#5D7C6C]">
+                <Battery className="w-3.5 h-3.5" /> Battery Capacity
               </span>
-              <span className="text-white font-bold">{config.battery.capacity_kwh} kWh</span>
+              <span className="font-mono font-bold text-[#1D3D2D]">
+                {config.battery.capacity_kwh} kWh
+              </span>
             </div>
             <input
               type="range"
@@ -158,92 +160,114 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
               step="10"
               value={config.battery.capacity_kwh}
               onChange={(e) => updateBattery('capacity_kwh', parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-[#1E293B] rounded appearance-none cursor-pointer"
+              className="w-full h-1.5 bg-[#E6E0D4] rounded-lg appearance-none cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] font-mono text-[#64748B] mt-1">
+            <div className="flex justify-between text-[10px] text-[#788A80] font-mono mt-1">
               <span>20 kWh</span>
+              <span>100 kWh</span>
               <span>300 kWh</span>
             </div>
           </div>
 
-          {/* Inverter Power */}
-          <div className="bg-[#141D30] border border-[#1A263D] p-3 rounded-lg">
-            <div className="flex justify-between text-xs font-mono mb-2">
-              <span className="text-[#94A3B8] flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-amber-400" />
-                Inverter Power Rating (kW)
+          {/* Max Charge / Discharge Power */}
+          <div className="p-3 bg-[#FFFFFF] rounded-xl border border-[#E3DED2]">
+            <div className="flex justify-between text-xs font-medium text-[#171E1A] mb-1.5">
+              <span className="text-[#5D7C6C]">BESS Power Inverter Rating</span>
+              <span className="font-mono font-bold text-[#1D3D2D]">
+                &plusmn;{config.battery.max_charge_kw} kW
               </span>
-              <span className="text-white font-bold">{config.battery.max_discharge_kw} kW</span>
             </div>
             <input
               type="range"
               min="10"
-              max="120"
+              max="150"
               step="5"
-              value={config.battery.max_discharge_kw}
+              value={config.battery.max_charge_kw}
               onChange={(e) => {
                 const val = parseFloat(e.target.value);
                 onChangeConfig({
                   ...config,
-                  battery: {
-                    ...config.battery,
-                    max_charge_kw: val,
-                    max_discharge_kw: val,
-                  },
+                  battery: { ...config.battery, max_charge_kw: val, max_discharge_kw: val },
                 });
               }}
-              className="w-full h-1.5 bg-[#1E293B] rounded appearance-none cursor-pointer"
+              className="w-full h-1.5 bg-[#E6E0D4] rounded-lg appearance-none cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] font-mono text-[#64748B] mt-1">
+            <div className="flex justify-between text-[10px] text-[#788A80] font-mono mt-1">
               <span>10 kW</span>
-              <span>120 kW</span>
+              <span>40 kW</span>
+              <span>150 kW</span>
+            </div>
+          </div>
+
+          {/* Initial SoC */}
+          <div className="p-3 bg-[#FFFFFF] rounded-xl border border-[#E3DED2]">
+            <div className="flex justify-between text-xs font-medium text-[#171E1A] mb-1.5">
+              <span className="text-[#5D7C6C]">Initial Starting SoC (Hour 0)</span>
+              <span className="font-mono font-bold text-[#1D3D2D]">
+                {Math.round(config.battery.initial_soc * 100)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.2"
+              max="0.8"
+              step="0.05"
+              value={config.battery.initial_soc}
+              onChange={(e) => updateBattery('initial_soc', parseFloat(e.target.value))}
+              className="w-full h-1.5 bg-[#E6E0D4] rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-[#788A80] font-mono mt-1">
+              <span>20% (Minimum)</span>
+              <span>50%</span>
+              <span>80%</span>
             </div>
           </div>
 
           {/* Carbon Weight */}
-          <div className="bg-[#141D30] border border-[#1A263D] p-3 rounded-lg">
-            <div className="flex justify-between text-xs font-mono mb-2">
-              <span className="text-[#94A3B8] flex items-center gap-1.5">
-                <Leaf className="w-4 h-4 text-[#00D8F6]" />
-                Carbon Emission Penalty Weight (λ)
+          <div className="p-3 bg-[#FFFFFF] rounded-xl border border-[#E3DED2]">
+            <div className="flex justify-between text-xs font-medium text-[#171E1A] mb-1.5">
+              <span className="flex items-center gap-1.5 text-[#5D7C6C]">
+                <Leaf className="w-3.5 h-3.5 text-[#1D3D2D]" /> Carbon Emission Weight ($\lambda$)
               </span>
-              <span className="text-[#00D8F6] font-bold">
-                {config.optimization.carbon_weight > 0
-                  ? `$${config.optimization.carbon_weight.toFixed(2)}/kg`
-                  : 'Off (Cost Minimization)'}
+              <span className="font-mono font-bold text-[#1D3D2D]">
+                ${config.optimization.carbon_weight.toFixed(2)} / kg CO₂
               </span>
             </div>
             <input
               type="range"
               min="0.0"
-              max="0.50"
+              max="0.5"
               step="0.05"
               value={config.optimization.carbon_weight}
               onChange={(e) => updateOptimization('carbon_weight', parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-[#1E293B] rounded appearance-none cursor-pointer"
+              className="w-full h-1.5 bg-[#E6E0D4] rounded-lg appearance-none cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] font-mono text-[#64748B] mt-1">
-              <span>$0.00</span>
-              <span>$0.50/kg ($500/t)</span>
+            <div className="flex justify-between text-[10px] text-[#788A80] font-mono mt-1">
+              <span>$0 (Cost Only)</span>
+              <span>$0.25 ($250/ton)</span>
+              <span>$0.50 ($500/ton)</span>
             </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#1A263D]">
-          <span className="text-[11px] font-mono text-[#64748B]">
-            Degradation: ${config.battery.degradation_cost_per_kwh}/kWh throughput
-          </span>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#E3DED2]">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl text-xs font-medium text-[#4A5B52] hover:text-[#171E1A] hover:bg-[#EAE6DB] transition-colors"
+          >
+            Cancel
+          </button>
           <button
             onClick={() => {
               onRunOptimization();
               onClose();
             }}
             disabled={loading}
-            className="px-5 py-2 bg-[#00E599] hover:bg-[#00D08A] text-[#080C14] font-bold text-xs font-mono rounded-lg transition flex items-center gap-2 shadow-lg shadow-[#00E599]/20"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1D3D2D] hover:bg-[#28533D] text-[#FAF8F5] text-xs font-semibold shadow-md transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            {loading ? 'Solving...' : 'Apply & Re-Run'}
+            Apply & Re-optimize
           </button>
         </div>
       </div>

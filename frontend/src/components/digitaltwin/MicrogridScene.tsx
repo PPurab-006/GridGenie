@@ -1,0 +1,267 @@
+import React, { Suspense, useRef, useState, useEffect } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
+import { TimeStepDispatch, AssetId, MicrogridConfig } from '../../types/api';
+import { Terrain } from './Terrain';
+import { SolarAsset } from './SolarAsset';
+import { WindAsset } from './WindAsset';
+import { BatteryAsset } from './BatteryAsset';
+import { FacilityAsset } from './FacilityAsset';
+import { SubstationAsset } from './SubstationAsset';
+import { EnergyFlows3D } from './EnergyFlows3D';
+import { FallbackDigitalTwin } from './FallbackDigitalTwin';
+import { RotateCcw, ZoomIn, ZoomOut, Layers } from 'lucide-react';
+
+interface MicrogridSceneProps {
+  step: TimeStepDispatch;
+  config: MicrogridConfig;
+  selectedAsset: AssetId | null;
+  onSelectAsset: (asset: AssetId | null) => void;
+  viewMode?: '3d' | '2d';
+  onToggleViewMode?: () => void;
+}
+
+// Dynamic Sky and Sun lighting driven by simulation hour and solar power
+const DynamicLighting: React.FC<{ hour: number; solarKw: number }> = ({ hour, solarKw }) => {
+  // Day vs night factor (0 = nocturnal, 1 = midday peak)
+  const isDaytime = hour >= 6 && hour <= 19;
+  const sunProgress = isDaytime ? (hour - 6) / 13 : 0;
+  const sunAngle = sunProgress * Math.PI;
+
+  // Sun 3D position
+  const sunX = Math.cos(sunAngle) * 22;
+  const sunY = isDaytime ? Math.sin(sunAngle) * 18 + 4 : 2;
+  const sunZ = 12;
+
+  // Light color shifts from warm sunrise amber to bright daylight to soft dusk
+  const sunColor = isDaytime
+    ? hour < 8 || hour > 17
+      ? '#F59E0B' // Golden hour
+      : '#FFFDF5' // Warm bright daylight
+    : '#1E293B'; // Cool nocturnal moonlight
+
+  const ambientIntensity = isDaytime ? 0.75 + Math.min(0.4, (solarKw / 80) * 0.4) : 0.35;
+  const sunIntensity = isDaytime ? 1.4 + Math.min(0.8, (solarKw / 80) * 0.8) : 0.2;
+
+  return (
+    <>
+      <ambientLight intensity={ambientIntensity} color={isDaytime ? '#F7F5EF' : '#94A3B8'} />
+      <directionalLight
+        position={[sunX, sunY, sunZ]}
+        intensity={sunIntensity}
+        color={sunColor}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-near={1}
+        shadow-camera-far={45}
+        shadow-camera-left={-22}
+        shadow-camera-right={22}
+        shadow-camera-top={22}
+        shadow-camera-bottom={-22}
+        shadow-bias={-0.0005}
+      />
+      {/* Soft fill light from opposite quadrant */}
+      <directionalLight
+        position={[-15, 10, -12]}
+        intensity={isDaytime ? 0.4 : 0.15}
+        color="#E2E8F0"
+      />
+    </>
+  );
+};
+
+export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
+  step,
+  config,
+  selectedAsset,
+  onSelectAsset,
+  viewMode = '3d',
+  onToggleViewMode,
+}) => {
+  const [webglError, setWebglError] = useState(false);
+  const controlsRef = useRef<any>(null);
+
+  // Check WebGL availability
+  useEffect(() => {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) setWebglError(true);
+    } catch {
+      setWebglError(true);
+    }
+  }, []);
+
+  // Camera reset
+  const handleResetCamera = () => {
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+      controlsRef.current.target.set(0, 1.2, 0);
+    }
+  };
+
+  const handleZoomIn = () => {
+    if (controlsRef.current) {
+      controlsRef.current.dollyIn(1.2);
+      controlsRef.current.update();
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (controlsRef.current) {
+      controlsRef.current.dollyOut(1.2);
+      controlsRef.current.update();
+    }
+  };
+
+  if (webglError || viewMode === '2d') {
+    return (
+      <div className="relative w-full h-[520px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#FAF8F5]">
+        <FallbackDigitalTwin
+          step={step}
+          config={config}
+          selectedAsset={selectedAsset}
+          onSelectAsset={(a) => onSelectAsset(a === selectedAsset ? null : a)}
+        />
+        {onToggleViewMode && (
+          <button
+            onClick={onToggleViewMode}
+            className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-lg bg-[#FAF8F5] border border-[#D5E0D7] text-xs font-medium text-[#171E1A] shadow-sm hover:bg-[#F0EDE4] flex items-center gap-1.5 transition-colors"
+          >
+            <Layers className="w-3.5 h-3.5 text-[#5D7C6C]" />
+            Switch to 3D View
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-[540px] lg:h-[580px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#F3F0E6] shadow-sm">
+      {/* 3D Scene Controls HUD */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-[#FAF8F5]/90 backdrop-blur-md p-1.5 rounded-xl border border-[#D5E0D7] shadow-sm">
+        <button
+          onClick={handleZoomIn}
+          className="p-1.5 rounded-lg hover:bg-[#EAE6DB] text-[#4A5B52] transition-colors"
+          title="Zoom In"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="p-1.5 rounded-lg hover:bg-[#EAE6DB] text-[#4A5B52] transition-colors"
+          title="Zoom Out"
+        >
+          <ZoomOut className="w-4 h-4" />
+        </button>
+        <button
+          onClick={handleResetCamera}
+          className="p-1.5 rounded-lg hover:bg-[#EAE6DB] text-[#4A5B52] transition-colors"
+          title="Reset Camera View"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+        {onToggleViewMode && (
+          <>
+            <div className="w-[1px] h-4 bg-[#D5E0D7] mx-0.5" />
+            <button
+              onClick={onToggleViewMode}
+              className="px-2 py-1 rounded-lg hover:bg-[#EAE6DB] text-xs font-medium text-[#171E1A] flex items-center gap-1 transition-colors"
+              title="Toggle 2D Schematic Mode"
+            >
+              <Layers className="w-3.5 h-3.5 text-[#5D7C6C]" />
+              2D
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Camera Guidance Prompt */}
+      <div className="absolute bottom-4 left-4 z-10 pointer-events-none select-none text-[11px] text-[#677B70] bg-[#FAF8F5]/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-[#D5E0D7]">
+        Click asset to inspect • Drag to rotate • Scroll to zoom
+      </div>
+
+      <Canvas
+        shadows
+        camera={{ position: [16, 15, 18], fov: 42, near: 0.5, far: 80 }}
+        onClick={() => onSelectAsset(null)}
+      >
+        <Suspense fallback={null}>
+          <DynamicLighting hour={step.hour} solarKw={step.solar_kw} />
+
+          <OrbitControls
+            ref={controlsRef}
+            target={[0, 1.2, 0]}
+            enableDamping
+            dampingFactor={0.06}
+            minDistance={8}
+            maxDistance={42}
+            minPolarAngle={0.15}
+            maxPolarAngle={Math.PI / 2.1} // Prevent flipping underneath terrain
+          />
+
+          {/* Architectural Terrain & Foliage */}
+          <Terrain />
+
+          {/* Asset 1: Solar Array */}
+          <SolarAsset
+            solarKw={step.solar_kw}
+            capacityKw={config.solar_capacity_kw}
+            isSelected={selectedAsset === 'solar'}
+            onSelect={() => onSelectAsset(selectedAsset === 'solar' ? null : 'solar')}
+          />
+
+          {/* Asset 2: Wind Turbines */}
+          <WindAsset
+            windKw={step.wind_kw}
+            capacityKw={config.wind_capacity_kw}
+            isSelected={selectedAsset === 'wind'}
+            onSelect={() => onSelectAsset(selectedAsset === 'wind' ? null : 'wind')}
+          />
+
+          {/* Asset 3: Battery Storage (BESS) */}
+          <BatteryAsset
+            batterySoc={step.battery_soc}
+            batteryEnergyKwh={step.battery_energy_kwh}
+            capacityKwh={config.battery.capacity_kwh}
+            chargeKw={step.battery_charge_kw}
+            dischargeKw={step.battery_discharge_kw}
+            isSelected={selectedAsset === 'battery'}
+            onSelect={() => onSelectAsset(selectedAsset === 'battery' ? null : 'battery')}
+          />
+
+          {/* Asset 4: Commercial/Industrial Facility (Load Demand) */}
+          <FacilityAsset
+            demandKw={step.demand_kw}
+            unservedKw={step.unserved_demand_kw}
+            isSelected={selectedAsset === 'facility'}
+            onSelect={() => onSelectAsset(selectedAsset === 'facility' ? null : 'facility')}
+          />
+
+          {/* Asset 5: Substation & Grid Connection */}
+          <SubstationAsset
+            gridImportKw={step.grid_import_kw}
+            gridExportKw={step.grid_export_kw}
+            gridPrice={step.grid_price}
+            carbonIntensity={step.grid_carbon_intensity}
+            isSelected={selectedAsset === 'grid'}
+            onSelect={() => onSelectAsset(selectedAsset === 'grid' ? null : 'grid')}
+          />
+
+          {/* Live 3D Energy Flows */}
+          <EnergyFlows3D
+            solarKw={step.solar_kw}
+            windKw={step.wind_kw}
+            chargeKw={step.battery_charge_kw}
+            dischargeKw={step.battery_discharge_kw}
+            demandKw={step.demand_kw}
+            gridImportKw={step.grid_import_kw}
+            gridExportKw={step.grid_export_kw}
+          />
+        </Suspense>
+      </Canvas>
+    </div>
+  );
+};
