@@ -1,7 +1,6 @@
 import React, { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import * as THREE from 'three';
 import { TimeStepDispatch, AssetId, MicrogridConfig } from '../../types/api';
 import { Terrain } from './Terrain';
 import { SolarAsset } from './SolarAsset';
@@ -11,6 +10,8 @@ import { FacilityAsset } from './FacilityAsset';
 import { SubstationAsset } from './SubstationAsset';
 import { EnergyFlows3D } from './EnergyFlows3D';
 import { FallbackDigitalTwin } from './FallbackDigitalTwin';
+import { CameraController } from './CameraController';
+import { CinematicInspectionOverlay } from './CinematicInspectionOverlay';
 import { RotateCcw, ZoomIn, ZoomOut, Layers } from 'lucide-react';
 
 interface MicrogridSceneProps {
@@ -22,51 +23,53 @@ interface MicrogridSceneProps {
   onToggleViewMode?: () => void;
 }
 
-// Dynamic Sky and Sun lighting driven by simulation hour and solar power
+// Dynamic Sky and Sun lighting driven strictly by simulation hour and solar power
 const DynamicLighting: React.FC<{ hour: number; solarKw: number }> = ({ hour, solarKw }) => {
-  // Day vs night factor (0 = nocturnal, 1 = midday peak)
-  const isDaytime = hour >= 6 && hour <= 19;
-  const sunProgress = isDaytime ? (hour - 6) / 13 : 0;
+  // Daylight strictly between 06:00 and 18:00 (19:00 - 05:00 is nocturnal night)
+  const isDaytime = hour >= 6 && hour <= 18;
+  const sunProgress = isDaytime ? (hour - 6) / 12 : 0;
   const sunAngle = sunProgress * Math.PI;
 
-  // Sun 3D position
+  // Sun 3D position arc across the sky
   const sunX = Math.cos(sunAngle) * 22;
-  const sunY = isDaytime ? Math.sin(sunAngle) * 18 + 4 : 2;
+  const sunY = isDaytime ? Math.sin(sunAngle) * 18 + 4 : -2;
   const sunZ = 12;
 
-  // Light color shifts from warm sunrise amber to bright daylight to soft dusk
+  // Sun color shifts from warm golden dawn/dusk to bright daylight
   const sunColor = isDaytime
-    ? hour < 8 || hour > 17
+    ? hour <= 7 || hour >= 17
       ? '#F59E0B' // Golden hour
-      : '#FFFDF5' // Warm bright daylight
-    : '#1E293B'; // Cool nocturnal moonlight
+      : '#FFFDF5' // Warm daylight
+    : '#1E293B'; // Moonless night sky
 
-  const ambientIntensity = isDaytime ? 0.75 + Math.min(0.4, (solarKw / 80) * 0.4) : 0.35;
-  const sunIntensity = isDaytime ? 1.4 + Math.min(0.8, (solarKw / 80) * 0.8) : 0.2;
+  const ambientIntensity = isDaytime ? 0.75 + Math.min(0.35, (solarKw / 80) * 0.35) : 0.3;
+  const sunIntensity = isDaytime ? 1.4 + Math.min(0.7, (solarKw / 80) * 0.7) : 0.05;
 
   return (
     <>
       <ambientLight intensity={ambientIntensity} color={isDaytime ? '#F7F5EF' : '#94A3B8'} />
-      <directionalLight
-        position={[sunX, sunY, sunZ]}
-        intensity={sunIntensity}
-        color={sunColor}
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-        shadow-camera-near={1}
-        shadow-camera-far={45}
-        shadow-camera-left={-22}
-        shadow-camera-right={22}
-        shadow-camera-top={22}
-        shadow-camera-bottom={-22}
-        shadow-bias={-0.0005}
-      />
+      {isDaytime && (
+        <directionalLight
+          position={[sunX, sunY, sunZ]}
+          intensity={sunIntensity}
+          color={sunColor}
+          castShadow
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+          shadow-camera-near={1}
+          shadow-camera-far={45}
+          shadow-camera-left={-22}
+          shadow-camera-right={22}
+          shadow-camera-top={22}
+          shadow-camera-bottom={-22}
+          shadow-bias={-0.0005}
+        />
+      )}
       {/* Soft fill light from opposite quadrant */}
       <directionalLight
         position={[-15, 10, -12]}
-        intensity={isDaytime ? 0.4 : 0.15}
-        color="#E2E8F0"
+        intensity={isDaytime ? 0.35 : 0.15}
+        color={isDaytime ? '#E2E8F0' : '#475569'}
       />
     </>
   );
@@ -96,7 +99,9 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
 
   // Camera reset
   const handleResetCamera = () => {
-    if (controlsRef.current) {
+    if (selectedAsset) {
+      onSelectAsset(null);
+    } else if (controlsRef.current) {
       controlsRef.current.reset();
       controlsRef.current.target.set(0, 1.2, 0);
     }
@@ -139,9 +144,22 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
   }
 
   return (
-    <div className="relative w-full h-[540px] lg:h-[580px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#F3F0E6] shadow-sm">
-      {/* 3D Scene Controls HUD */}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-[#FAF8F5]/90 backdrop-blur-md p-1.5 rounded-xl border border-[#D5E0D7] shadow-sm">
+    <div className="relative w-full h-[560px] lg:h-[620px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#F3F0E6] shadow-sm">
+      {/* 1. Cinematic Inspection HUD Overlay (Docked in upper-left quadrant beside subject) */}
+      {selectedAsset && (
+        <CinematicInspectionOverlay
+          assetId={selectedAsset}
+          step={step}
+          config={config}
+          onBackToOverview={() => onSelectAsset(null)}
+        />
+      )}
+
+      {/* 2. Top-Right 3D Controls HUD */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-[#FAF8F5]/92 backdrop-blur-md p-1.5 rounded-xl border border-[#D5E0D7] shadow-sm pointer-events-auto"
+      >
         <button
           onClick={handleZoomIn}
           className="p-1.5 rounded-lg hover:bg-[#EAE6DB] text-[#4A5B52] transition-colors"
@@ -159,7 +177,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
         <button
           onClick={handleResetCamera}
           className="p-1.5 rounded-lg hover:bg-[#EAE6DB] text-[#4A5B52] transition-colors"
-          title="Reset Camera View"
+          title={selectedAsset ? "Return to Aerial Overview" : "Reset Camera View"}
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -178,31 +196,42 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
         )}
       </div>
 
-      {/* Camera Guidance Prompt */}
-      <div className="absolute bottom-4 left-4 z-10 pointer-events-none select-none text-[11px] text-[#677B70] bg-[#FAF8F5]/80 backdrop-blur-sm px-2.5 py-1 rounded-md border border-[#D5E0D7]">
-        Click asset to inspect • Drag to rotate • Scroll to zoom
-      </div>
+      {/* 3. Bottom-Left Camera Guidance Prompt (Overview mode only) */}
+      {!selectedAsset && (
+        <div className="absolute bottom-4 left-4 z-10 pointer-events-none select-none text-[11px] text-[#5D7C6C] bg-[#FAF8F5]/85 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#D5E0D7] shadow-sm">
+          Click any 3D asset for cinematic inspection &bull; Drag to orbit &bull; Scroll to zoom
+        </div>
+      )}
 
+      {/* 4. Main WebGL Canvas */}
       <Canvas
         shadows
-        camera={{ position: [16, 15, 18], fov: 42, near: 0.5, far: 80 }}
-        onClick={() => onSelectAsset(null)}
+        camera={{ position: [16, 15, 18], fov: 40, near: 0.5, far: 85 }}
+        onClick={() => {
+          if (selectedAsset) onSelectAsset(null);
+        }}
       >
         <Suspense fallback={null}>
           <DynamicLighting hour={step.hour} solarKw={step.solar_kw} />
+
+          {/* Smooth Cinematic Camera Transition Controller */}
+          <CameraController
+            selectedAsset={selectedAsset}
+            controlsRef={controlsRef}
+          />
 
           <OrbitControls
             ref={controlsRef}
             target={[0, 1.2, 0]}
             enableDamping
             dampingFactor={0.06}
-            minDistance={8}
-            maxDistance={42}
-            minPolarAngle={0.15}
-            maxPolarAngle={Math.PI / 2.1} // Prevent flipping underneath terrain
+            minDistance={4}
+            maxDistance={48}
+            minPolarAngle={0.08}
+            maxPolarAngle={Math.PI / 2.05} // Prevent camera flipping below terrain
           />
 
-          {/* Architectural Terrain & Foliage */}
+          {/* Architectural Terrain & Landscaping */}
           <Terrain />
 
           {/* Asset 1: Solar Array */}

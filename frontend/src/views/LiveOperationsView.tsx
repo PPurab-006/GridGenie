@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ComparisonResult, MicrogridConfig, AssetId } from '../types/api';
 import { MicrogridScene } from '../components/digitaltwin/MicrogridScene';
-import { AssetDetailPanel } from '../components/digitaltwin/AssetDetailPanel';
 import {
   Zap,
   BatteryCharging,
@@ -142,31 +141,16 @@ export const LiveOperationsView: React.FC<LiveOperationsViewProps> = ({
         </div>
       </div>
 
-      {/* 2. Central 3D Digital Twin & Contextual Asset Inspector */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Main 3D Canvas Viewport */}
-        <div className={`transition-all duration-300 ${selectedAsset ? 'lg:col-span-8 xl:col-span-9' : 'lg:col-span-12'}`}>
-          <MicrogridScene
-            step={currentStep}
-            config={config}
-            selectedAsset={selectedAsset}
-            onSelectAsset={setSelectedAsset}
-            viewMode={viewMode}
-            onToggleViewMode={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
-          />
-        </div>
-
-        {/* Contextual Asset Detail Panel (Shown when an asset is clicked) */}
-        {selectedAsset && (
-          <div className="lg:col-span-4 xl:col-span-3 animate-in slide-in-from-right-4 duration-200">
-            <AssetDetailPanel
-              assetId={selectedAsset}
-              step={currentStep}
-              config={config}
-              onClose={() => setSelectedAsset(null)}
-            />
-          </div>
-        )}
+      {/* 2. Central 3D Digital Twin (Full-width cinematic exploration canvas) */}
+      <div className="w-full">
+        <MicrogridScene
+          step={currentStep}
+          config={config}
+          selectedAsset={selectedAsset}
+          onSelectAsset={setSelectedAsset}
+          viewMode={viewMode}
+          onToggleViewMode={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
+        />
       </div>
 
       {/* 3. Human-Readable Energy Summary Strip */}

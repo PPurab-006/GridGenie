@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Html } from '@react-three/drei';
 import { Zap, ArrowDownRight, ArrowUpRight } from 'lucide-react';
 
@@ -22,7 +22,15 @@ export const SubstationAsset: React.FC<SubstationAssetProps> = ({
   const [hovered, setHovered] = useState(false);
   const isImporting = gridImportKw > 0.1;
   const isExporting = gridExportKw > 0.1;
-  const isIslanded = !isImporting && !isExporting;
+
+  useEffect(() => {
+    if (hovered) {
+      document.body.style.cursor = 'pointer';
+      return () => {
+        document.body.style.cursor = 'auto';
+      };
+    }
+  }, [hovered]);
 
   return (
     <group
@@ -117,76 +125,76 @@ export const SubstationAsset: React.FC<SubstationAssetProps> = ({
       </group>
 
       {/* Overhead high-voltage lines between Substation and Grid Boundary Tower */}
-      <mesh position={[7.4, 4.2, -0.6]} rotation={[0, 0, 0.18]}>
+      <mesh position={[7.4, 4.2, -0.6]} rotation={[0, 0, 0.18]} raycast={() => null}>
         <cylinderGeometry args={[0.015, 0.015, 11.5, 6]} />
         <meshStandardMaterial color="#333333" metalness={0.9} />
       </mesh>
-      <mesh position={[7.4, 4.2, 0.6]} rotation={[0, 0, 0.18]}>
+      <mesh position={[7.4, 4.2, 0.6]} rotation={[0, 0, 0.18]} raycast={() => null}>
         <cylinderGeometry args={[0.015, 0.015, 11.5, 6]} />
         <meshStandardMaterial color="#333333" metalness={0.9} />
       </mesh>
 
-      {/* Selection / Hover Indicator Ring */}
+      {/* Selection / Inspection Focus Ring */}
       {(isSelected || hovered) && (
         <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[2.2, 2.4, 36]} />
           <meshBasicMaterial
             color={isSelected ? '#1D3D2D' : '#5D7C6C'}
             transparent
-            opacity={0.8}
+            opacity={isSelected ? 0.9 : 0.6}
           />
         </mesh>
       )}
 
-      {/* Floating 3D Label & Value Tag */}
-      <Html position={[0, 3.2, 0]} center distanceFactor={14}>
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
-          className={`cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border backdrop-blur-sm flex items-center gap-2 ${
-            isSelected
-              ? 'bg-[#1D3D2D] text-[#FAF8F5] border-[#1D3D2D] scale-105'
-              : hovered
-              ? 'bg-[#FAF8F5] text-[#171E1A] border-[#1D3D2D]'
-              : 'bg-[#FAF8F5]/90 text-[#171E1A] border-[#DCD5C5]'
-          }`}
-        >
+      {/* Floating 3D Label & Value Tag (hidden during close-up inspection) */}
+      {!isSelected && (
+        <Html position={[0, 3.2, 0]} center distanceFactor={14}>
           <div
-            className={`w-5 h-5 rounded-md flex items-center justify-center ${
-              isImporting
-                ? 'bg-rose-100 text-rose-700'
-                : isExporting
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-gray-100 text-gray-500'
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect();
+            }}
+            className={`cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border backdrop-blur-sm flex items-center gap-2 ${
+              hovered
+                ? 'bg-[#FAF8F5] text-[#171E1A] border-[#1D3D2D] scale-105'
+                : 'bg-[#FAF8F5]/90 text-[#171E1A] border-[#DCD5C5]'
             }`}
           >
-            {isImporting ? (
-              <ArrowDownRight className="w-3.5 h-3.5" />
-            ) : isExporting ? (
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            ) : (
-              <Zap className="w-3.5 h-3.5" />
-            )}
-          </div>
-          <div className="flex flex-col text-left leading-none">
-            <span className="text-[10px] font-medium tracking-wide uppercase opacity-75">
-              Substation & Grid
+            <div
+              className={`w-5 h-5 rounded-md flex items-center justify-center ${
+                isImporting
+                  ? 'bg-rose-100 text-rose-700'
+                  : isExporting
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-gray-100 text-gray-500'
+              }`}
+            >
+              {isImporting ? (
+                <ArrowDownRight className="w-3.5 h-3.5" />
+              ) : isExporting ? (
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              ) : (
+                <Zap className="w-3.5 h-3.5" />
+              )}
+            </div>
+            <div className="flex flex-col text-left leading-none">
+              <span className="text-[10px] font-medium tracking-wide uppercase opacity-75">
+                Substation & Grid
+              </span>
+              <span className="text-xs font-semibold tabular-nums mt-0.5">
+                {isImporting
+                  ? `Import ${gridImportKw.toFixed(1)} kW`
+                  : isExporting
+                  ? `Export ${gridExportKw.toFixed(1)} kW`
+                  : 'Balanced / Islanded'}
+              </span>
+            </div>
+            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-gray-50 text-gray-700 border border-gray-200 tabular-nums">
+              ${gridPrice.toFixed(2)}/kWh
             </span>
-            <span className="text-xs font-semibold tabular-nums mt-0.5">
-              {isImporting
-                ? `Import ${gridImportKw.toFixed(1)} kW`
-                : isExporting
-                ? `Export ${gridExportKw.toFixed(1)} kW`
-                : 'Balanced / Islanded'}
-            </span>
           </div>
-          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-gray-50 text-gray-700 border border-gray-200 tabular-nums">
-            ${gridPrice.toFixed(2)}/kWh
-          </span>
-        </div>
-      </Html>
+        </Html>
+      )}
     </group>
   );
 };

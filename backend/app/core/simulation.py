@@ -136,9 +136,9 @@ def generate_scenario_timeseries(config: MicrogridConfig) -> List[TimeStepInput]
     else:
         raise ValueError(f"Unknown scenario_id: {scenario_id}")
 
-    # Clip lower bounds to non-negative physical values
+    # Clip lower bounds to non-negative physical values and zero out nocturnal solar
     demand = np.maximum(demand, 5.0)
-    solar = np.maximum(solar, 0.0)
+    solar = np.where(solar_shape > 0, np.maximum(solar, 0.0), 0.0)
     wind = np.maximum(wind, 0.0)
     price = np.maximum(price, 0.05)
     carbon = np.maximum(carbon, 0.10)

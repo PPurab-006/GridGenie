@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -95,8 +95,19 @@ export const WindAsset: React.FC<WindAssetProps> = ({
   const utilizationPct = capacityKw > 0 ? (windKw / capacityKw) * 100 : 0;
   const isSpinning = windKw > 0.1;
 
+  useEffect(() => {
+    if (hovered) {
+      document.body.style.cursor = 'pointer';
+      return () => {
+        document.body.style.cursor = 'auto';
+      };
+    }
+  }, [hovered]);
+
   // Rotation speed scales realistically with output power (0 to ~2.5 rad/s)
-  const rotationSpeed = isSpinning ? Math.min(2.8, 0.5 + (windKw / Math.max(1, capacityKw)) * 2.2) : 0;
+  const rotationSpeed = isSpinning
+    ? Math.min(2.8, 0.5 + (windKw / Math.max(1, capacityKw)) * 2.2)
+    : 0;
 
   return (
     <group
@@ -116,55 +127,55 @@ export const WindAsset: React.FC<WindAssetProps> = ({
       {/* Secondary Wind Turbine (depth and scale) */}
       <TurbineUnit position={[11, 0, -5]} rotationSpeed={rotationSpeed * 0.94} scale={0.88} />
 
-      {/* Selection / Hover Indicator Ring */}
+      {/* Selection / Inspection Focus Ring */}
       {(isSelected || hovered) && (
         <mesh position={[7, 0.05, -8]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[1.6, 1.8, 36]} />
+          <ringGeometry args={[1.7, 1.9, 36]} />
           <meshBasicMaterial
             color={isSelected ? '#1D3D2D' : '#5D7C6C'}
             transparent
-            opacity={0.8}
+            opacity={isSelected ? 0.9 : 0.6}
           />
         </mesh>
       )}
 
-      {/* Floating 3D Label & Value Tag */}
-      <Html position={[7, 4.5, -8]} center distanceFactor={16}>
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
-          className={`cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border backdrop-blur-sm flex items-center gap-2 ${
-            isSelected
-              ? 'bg-[#1D3D2D] text-[#FAF8F5] border-[#1D3D2D] scale-105'
-              : hovered
-              ? 'bg-[#FAF8F5] text-[#171E1A] border-[#1D3D2D]'
-              : 'bg-[#FAF8F5]/90 text-[#171E1A] border-[#DCD5C5]'
-          }`}
-        >
+      {/* Floating 3D Label & Value Tag (hidden during close-up inspection) */}
+      {!isSelected && (
+        <Html position={[7, 4.5, -8]} center distanceFactor={16}>
           <div
-            className={`w-5 h-5 rounded-md flex items-center justify-center ${
-              isSpinning ? 'bg-cyan-100 text-cyan-700' : 'bg-gray-100 text-gray-400'
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect();
+            }}
+            className={`cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border backdrop-blur-sm flex items-center gap-2 ${
+              hovered
+                ? 'bg-[#FAF8F5] text-[#171E1A] border-[#1D3D2D] scale-105'
+                : 'bg-[#FAF8F5]/90 text-[#171E1A] border-[#DCD5C5]'
             }`}
           >
-            <Wind className="w-3.5 h-3.5" />
+            <div
+              className={`w-5 h-5 rounded-md flex items-center justify-center ${
+                isSpinning ? 'bg-cyan-100 text-cyan-700' : 'bg-gray-100 text-gray-400'
+              }`}
+            >
+              <Wind className="w-3.5 h-3.5" />
+            </div>
+            <div className="flex flex-col text-left leading-none">
+              <span className="text-[10px] font-medium tracking-wide uppercase opacity-75">
+                Wind Turbines
+              </span>
+              <span className="text-xs font-semibold tabular-nums mt-0.5">
+                {windKw.toFixed(1)} <span className="text-[9px] font-normal">kW</span>
+              </span>
+            </div>
+            {isSpinning && (
+              <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200 tabular-nums">
+                {utilizationPct.toFixed(0)}%
+              </span>
+            )}
           </div>
-          <div className="flex flex-col text-left leading-none">
-            <span className="text-[10px] font-medium tracking-wide uppercase opacity-75">
-              Wind Turbines
-            </span>
-            <span className="text-xs font-semibold tabular-nums mt-0.5">
-              {windKw.toFixed(1)} <span className="text-[9px] font-normal">kW</span>
-            </span>
-          </div>
-          {isSpinning && (
-            <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200 tabular-nums">
-              {utilizationPct.toFixed(0)}%
-            </span>
-          )}
-        </div>
-      </Html>
+        </Html>
+      )}
     </group>
   );
 };

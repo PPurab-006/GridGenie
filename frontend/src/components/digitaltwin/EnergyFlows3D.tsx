@@ -80,8 +80,8 @@ const FlowStream: React.FC<{ stream: StreamDef }> = ({ stream }) => {
 
   return (
     <group>
-      {/* Static Conduit Wire */}
-      <mesh geometry={tubeGeo}>
+      {/* Static Conduit Wire - raycast disabled to prevent blocking asset clicks */}
+      <mesh geometry={tubeGeo} raycast={() => null}>
         <meshStandardMaterial
           color={isActive ? color : '#9E998E'}
           emissive={isActive ? color : '#000000'}
@@ -92,11 +92,12 @@ const FlowStream: React.FC<{ stream: StreamDef }> = ({ stream }) => {
         />
       </mesh>
 
-      {/* Animated Glowing Energy Pulses */}
+      {/* Animated Glowing Energy Pulses - raycast disabled */}
       {isActive && (
         <instancedMesh
           ref={particlesRef}
           args={[undefined, undefined, particleCount]}
+          raycast={() => null}
         >
           <sphereGeometry args={[1, 10, 10]} />
           <meshBasicMaterial color={color} />
