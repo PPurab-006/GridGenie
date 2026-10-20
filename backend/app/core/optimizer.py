@@ -1,5 +1,5 @@
 """
-Constrained dispatch optimization engine for GridMind.
+Constrained dispatch optimization engine for GridGenie.
 Formulates and solves the look-ahead microgrid dispatch problem using SciPy HiGHS LP solver.
 Implements genuine two-stage dispatch:
   Stage 1: Day-Ahead Look-Ahead Optimization solved on Forecasts (no future actual leakage).
@@ -250,7 +250,7 @@ def solve_optimal_dispatch(
 
     kpis = calculate_strategy_kpis(dispatches, batt.capacity_kwh)
     return StrategyResult(
-        strategy_name="GridMind Optimizer (Two-Stage LP)",
+        strategy_name="GridGenie Optimizer (Two-Stage LP)",
         kpis=kpis,
         steps=dispatches,
     )

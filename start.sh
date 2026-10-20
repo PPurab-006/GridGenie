@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT_DIR"
 
 echo "======================================================================"
-echo "⚡ Starting GridMind: Autonomous Microgrid Optimizer (IEEE ClimateChain)"
+echo "⚡ Starting GridGenie: Autonomous Microgrid Optimizer (IEEE ClimateChain)"
 echo "======================================================================"
 
 # Ensure virtual environment exists
@@ -18,7 +18,7 @@ fi
 # Function to kill all spawned child processes on exit
 cleanup() {
   echo ""
-  echo "Shutting down GridMind backend and frontend services..."
+  echo "Shutting down GridGenie backend and frontend services..."
   kill $(jobs -p) 2>/dev/null || true
   exit 0
 }
@@ -47,7 +47,7 @@ FRONTEND_PID=$!
 
 echo ""
 echo "======================================================================"
-echo "🚀 GridMind is LIVE!"
+echo "🚀 GridGenie is LIVE!"
 echo "   Dashboard: http://localhost:5173"
 echo "   API Docs:  http://127.0.0.1:8008/docs"
 echo "   Press Ctrl+C to terminate all services."

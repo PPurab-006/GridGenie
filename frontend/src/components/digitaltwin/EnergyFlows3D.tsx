@@ -1,6 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { AssetId } from '../../types/api';
 
 interface EnergyFlows3DProps {
   solarKw: number;
@@ -10,10 +11,13 @@ interface EnergyFlows3DProps {
   demandKw: number;
   gridImportKw: number;
   gridExportKw: number;
+  selectedAsset?: AssetId | null;
 }
 
 interface StreamDef {
   id: string;
+  sourceAsset: AssetId;
+  targetAsset: AssetId;
   start: [number, number, number];
   control: [number, number, number];
   end: [number, number, number];
@@ -22,11 +26,15 @@ interface StreamDef {
   particleCount: number;
 }
 
-const FlowStream: React.FC<{ stream: StreamDef }> = ({ stream }) => {
+const FlowStream: React.FC<{
+  stream: StreamDef;
+  isFocused: boolean;
+  isDimmed: boolean;
+}> = ({ stream, isFocused, isDimmed }) => {
   const { start, control, end, power, color, particleCount } = stream;
-  const isActive = power > 0.1;
+  const isActive = power > 0.1 && !isDimmed;
 
-  // Build quadratic bezier curve
+  // Build quadratic bezier curve with accurate grounded elevations
   const curve = useMemo(() => {
     return new THREE.QuadraticBezierCurve3(
       new THREE.Vector3(...start),
@@ -35,41 +43,39 @@ const FlowStream: React.FC<{ stream: StreamDef }> = ({ stream }) => {
     );
   }, [start, control, end]);
 
-  // Pre-generate tube geometry for the electrical line
+  // Refined conduit tube geometry (0.018 radius for realistic aesthetic)
   const tubeGeo = useMemo(() => {
-    return new THREE.TubeGeometry(curve, 32, 0.025, 6, false);
+    return new THREE.TubeGeometry(curve, 36, 0.018, 6, false);
   }, [curve]);
 
-  // Particle positions ref
   const particlesRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  // Particle offsets (evenly distributed 0..1)
+  // Particle offsets evenly spaced
   const offsets = useMemo(() => {
     return Array.from({ length: particleCount }, (_, i) => i / particleCount);
   }, [particleCount]);
 
-  // Calculate speed: faster for higher power, clamped reasonably
-  const speed = Math.min(0.85, 0.15 + (power / 100) * 0.7);
+  // Speed scales gently with power
+  const speed = Math.min(0.75, 0.16 + (power / 100) * 0.55);
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (!particlesRef.current || !isActive) return;
 
     const time = state.clock.getElapsedTime();
 
     offsets.forEach((offset, idx) => {
-      // Progress t along curve [0, 1]
       const t = (offset + time * speed) % 1.0;
       const point = curve.getPoint(t);
       const tangent = curve.getTangent(t);
 
       dummy.position.copy(point);
-      // Align particle with curve tangent
       dummy.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tangent);
 
-      // Pulse size slightly near middle of arc
-      const scale = 0.08 + Math.sin(t * Math.PI) * 0.04;
-      dummy.scale.set(scale, scale * 1.8, scale);
+      // Restrained, elegant particle scale to avoid foreground obstruction
+      const baseScale = isFocused ? 0.038 : 0.046;
+      const scale = baseScale * (0.85 + 0.35 * Math.sin(t * Math.PI));
+      dummy.scale.set(scale, scale * 1.5, scale);
 
       dummy.updateMatrix();
       particlesRef.current!.setMatrixAt(idx, dummy.matrix);
@@ -80,20 +86,20 @@ const FlowStream: React.FC<{ stream: StreamDef }> = ({ stream }) => {
 
   return (
     <group>
-      {/* Static Conduit Wire - raycast disabled to prevent blocking asset clicks */}
+      {/* Physical Conduit Line */}
       <mesh geometry={tubeGeo} raycast={() => null}>
         <meshStandardMaterial
-          color={isActive ? color : '#9E998E'}
-          emissive={isActive ? color : '#000000'}
-          emissiveIntensity={isActive ? 0.35 : 0}
+          color={isDimmed ? '#B8B3A8' : isActive ? color : '#C0BAB0'}
+          emissive={isActive && !isDimmed ? color : '#000000'}
+          emissiveIntensity={isActive && !isDimmed ? (isFocused ? 0.5 : 0.35) : 0}
           transparent
-          opacity={isActive ? 0.65 : 0.15}
+          opacity={isDimmed ? 0.08 : isActive ? 0.75 : 0.2}
           roughness={0.4}
         />
       </mesh>
 
-      {/* Animated Glowing Energy Pulses - raycast disabled */}
-      {isActive && (
+      {/* Animated Glowing Energy Pulses */}
+      {isActive && particleCount > 0 && (
         <instancedMesh
           ref={particlesRef}
           args={[undefined, undefined, particleCount]}
@@ -115,8 +121,17 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
   demandKw,
   gridImportKw,
   gridExportKw,
+  selectedAsset = null,
 }) => {
-  // Define all possible physical paths with precise directions
+  // World-space asset coordinates & precise equipment anchor points:
+  // Substation distribution bus: [0.0, 0.8, 0.0]
+  // Solar inverter skid: [-5.2, 0.6, -3.0]
+  // Wind turbine base pad: [7.0, 0.4, -7.5]
+  // Battery inverter skid: [-3.4, 0.7, 5.0]
+  // Facility service entrance: [3.8, 0.7, 3.5]
+  // Substation high-voltage gantry: [1.8, 2.4, 0.0]
+  // Utility grid boundary tower: [13.0, 2.6, 0.0]
+
   const streams: StreamDef[] = useMemo(() => {
     const list: StreamDef[] = [];
 
@@ -124,9 +139,11 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
     if (solarKw > 0.1) {
       list.push({
         id: 'solar-to-bus',
-        start: [-8, 0.8, -3],
-        control: [-4, 2.4, -1.5],
-        end: [0, 1.3, 0],
+        sourceAsset: 'solar',
+        targetAsset: 'grid',
+        start: [-5.2, 0.6, -3.0],
+        control: [-2.6, 0.9, -1.5], // Restrained curve elevation below camera sightlines
+        end: [-0.4, 0.8, -0.2],
         power: solarKw,
         color: '#D97706', // Warm Amber
         particleCount: Math.min(8, Math.max(3, Math.round(solarKw / 10))),
@@ -137,9 +154,11 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
     if (windKw > 0.1) {
       list.push({
         id: 'wind-to-bus',
-        start: [7, 1.2, -8],
-        control: [3.5, 3.0, -4],
-        end: [0, 1.3, 0],
+        sourceAsset: 'wind',
+        targetAsset: 'grid',
+        start: [7.0, 0.4, -7.5],
+        control: [3.5, 1.2, -3.8],
+        end: [0.2, 0.8, -0.3],
         power: windKw,
         color: '#0284C7', // Cyan Blue
         particleCount: Math.min(8, Math.max(3, Math.round(windKw / 8))),
@@ -150,12 +169,14 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
     if (chargeKw > 0.1) {
       list.push({
         id: 'bus-to-battery',
-        start: [0, 1.3, 0],
-        control: [-3, 2.2, 2.5],
-        end: [-6, 1.0, 5],
+        sourceAsset: 'grid',
+        targetAsset: 'battery',
+        start: [-0.3, 0.8, 0.3],
+        control: [-1.8, 1.1, 2.6],
+        end: [-3.4, 0.7, 5.0],
         power: chargeKw,
         color: '#059669', // Emerald Charging
-        particleCount: Math.min(7, Math.max(3, Math.round(chargeKw / 4))),
+        particleCount: Math.min(7, Math.max(3, Math.round(chargeKw / 5))),
       });
     }
 
@@ -163,12 +184,14 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
     if (dischargeKw > 0.1) {
       list.push({
         id: 'battery-to-bus',
-        start: [-6, 1.0, 5],
-        control: [-3, 2.2, 2.5],
-        end: [0, 1.3, 0],
+        sourceAsset: 'battery',
+        targetAsset: 'grid',
+        start: [-3.4, 0.7, 5.0],
+        control: [-1.8, 1.1, 2.6],
+        end: [-0.3, 0.8, 0.3],
         power: dischargeKw,
         color: '#65A30D', // Lime Discharging
-        particleCount: Math.min(7, Math.max(3, Math.round(dischargeKw / 4))),
+        particleCount: Math.min(7, Math.max(3, Math.round(dischargeKw / 5))),
       });
     }
 
@@ -176,9 +199,11 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
     if (demandKw > 0.1) {
       list.push({
         id: 'bus-to-facility',
-        start: [0, 1.3, 0],
-        control: [3, 2.3, 2],
-        end: [6, 1.2, 4],
+        sourceAsset: 'grid',
+        targetAsset: 'facility',
+        start: [0.3, 0.8, 0.3],
+        control: [2.0, 1.1, 1.9],
+        end: [3.8, 0.7, 3.5],
         power: demandKw,
         color: '#D97706', // Amber Load
         particleCount: Math.min(9, Math.max(4, Math.round(demandKw / 12))),
@@ -189,9 +214,11 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
     if (gridImportKw > 0.1) {
       list.push({
         id: 'grid-to-bus',
-        start: [13, 2.8, 0],
-        control: [6.5, 3.2, 0],
-        end: [0, 1.3, 0],
+        sourceAsset: 'grid',
+        targetAsset: 'grid',
+        start: [13.0, 2.6, 0.0],
+        control: [7.4, 2.8, 0.0],
+        end: [1.8, 2.4, 0.0],
         power: gridImportKw,
         color: '#DC2626', // Crimson Import
         particleCount: Math.min(8, Math.max(3, Math.round(gridImportKw / 10))),
@@ -202,9 +229,11 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
     if (gridExportKw > 0.1) {
       list.push({
         id: 'bus-to-grid',
-        start: [0, 1.3, 0],
-        control: [6.5, 3.2, 0],
-        end: [13, 2.8, 0],
+        sourceAsset: 'grid',
+        targetAsset: 'grid',
+        start: [1.8, 2.4, 0.0],
+        control: [7.4, 2.8, 0.0],
+        end: [13.0, 2.6, 0.0],
         power: gridExportKw,
         color: '#059669', // Emerald Export
         particleCount: Math.min(7, Math.max(3, Math.round(gridExportKw / 10))),
@@ -216,9 +245,26 @@ export const EnergyFlows3D: React.FC<EnergyFlows3DProps> = ({
 
   return (
     <group>
-      {streams.map((stream) => (
-        <FlowStream key={stream.id} stream={stream} />
-      ))}
+      {streams.map((stream) => {
+        // In inspection mode, check if this stream is directly related to the selected asset
+        const isRelated =
+          !selectedAsset ||
+          stream.sourceAsset === selectedAsset ||
+          stream.targetAsset === selectedAsset ||
+          (selectedAsset === 'grid' && (stream.sourceAsset === 'grid' || stream.targetAsset === 'grid'));
+
+        const isDimmed = Boolean(selectedAsset && !isRelated);
+        const isFocused = Boolean(selectedAsset && isRelated);
+
+        return (
+          <FlowStream
+            key={stream.id}
+            stream={stream}
+            isFocused={isFocused}
+            isDimmed={isDimmed}
+          />
+        );
+      })}
     </group>
   );
 };

@@ -124,7 +124,7 @@ export const PerformanceLabView: React.FC<PerformanceLabViewProps> = ({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `gridmind_v3_benchmarks_seed_${currentSeed}.csv`);
+    link.setAttribute('download', `gridgenie_v3_benchmarks_seed_${currentSeed}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -143,7 +143,7 @@ export const PerformanceLabView: React.FC<PerformanceLabViewProps> = ({
             Performance Lab & Strategy Benchmark
           </h2>
           <p className="text-xs sm:text-sm text-[#4A5B52] mt-0.5">
-            Scientific head-to-head comparison between rule-based heuristic dispatch and GridMind's
+            Scientific head-to-head comparison between rule-based heuristic dispatch and GridGenie's
             two-stage optimizer.
           </p>
         </div>
@@ -277,7 +277,7 @@ export const PerformanceLabView: React.FC<PerformanceLabViewProps> = ({
                   <tr className="border-b border-[#E3ECE6] text-[#788A80] font-semibold">
                     <th className="pb-2">Metric</th>
                     <th className="pb-2">Baseline</th>
-                    <th className="pb-2">GridMind</th>
+                    <th className="pb-2">GridGenie</th>
                     <th className="pb-2 text-right">Delta</th>
                   </tr>
                 </thead>
@@ -350,7 +350,7 @@ export const PerformanceLabView: React.FC<PerformanceLabViewProps> = ({
           <div className="mt-4 p-3 bg-[#F0EDE4] border border-[#DCD5C5] rounded-lg text-xs text-[#384E43] flex items-start gap-2 leading-relaxed">
             <Info className="w-4 h-4 text-[#5D7C6C] shrink-0 mt-0.5" />
             <span>
-              <strong>Dispatch Insight:</strong> The baseline strategy dispatches storage greedily. GridMind's look-ahead optimizer pre-charges during cheap off-peak hours and preserves energy to displace expensive peaker power during evening high-tariff windows.
+              <strong>Dispatch Insight:</strong> The baseline strategy dispatches storage greedily. GridGenie's look-ahead optimizer pre-charges during cheap off-peak hours and preserves energy to displace expensive peaker power during evening high-tariff windows.
             </span>
           </div>
         </div>
@@ -364,7 +364,7 @@ export const PerformanceLabView: React.FC<PerformanceLabViewProps> = ({
                 Grid Import Profile & Tariff Arbitrage
               </h3>
               <p className="text-xs text-[#5D7C6C]">
-                Illustrates how GridMind shifts grid import out of peak pricing windows
+                Illustrates how GridGenie shifts grid import out of peak pricing windows
               </p>
             </div>
             <span className="text-[11px] text-[#788A80] font-mono">kW vs. $/kWh</span>
@@ -469,10 +469,10 @@ export const PerformanceLabView: React.FC<PerformanceLabViewProps> = ({
                 <tr className="border-b border-[#E3ECE6] text-[#788A80] font-semibold">
                   <th className="pb-3">Scenario</th>
                   <th className="pb-3">Baseline Cost</th>
-                  <th className="pb-3">GridMind Cost</th>
+                  <th className="pb-3">GridGenie Cost</th>
                   <th className="pb-3">Cost Savings</th>
                   <th className="pb-3">Baseline CO₂</th>
-                  <th className="pb-3">GridMind CO₂</th>
+                  <th className="pb-3">GridGenie CO₂</th>
                   <th className="pb-3">CO₂ Avoided</th>
                   <th className="pb-3">Peak Draw</th>
                   <th className="pb-3 text-right">Reliability</th>

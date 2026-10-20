@@ -1,5 +1,5 @@
 """
-GridMind FastAPI Application Entrypoint.
+GridGenie FastAPI Application Entrypoint.
 Autonomous Renewable Energy Microgrid Optimizer & Digital Twin.
 IEEE ClimateChain Global Hackathon Submission.
 """
@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api.routes import router
 
 app = FastAPI(
-    title="GridMind: Autonomous Renewable Energy Microgrid Optimizer",
+    title="GridGenie: Autonomous Renewable Energy Microgrid Optimizer",
     description=(
         "An AI-assisted renewable-energy microgrid digital twin and constrained look-ahead dispatch optimizer. "
         "Simulates solar, wind, battery storage, and dynamic grid pricing while solving linear programming "
@@ -32,7 +32,7 @@ app.include_router(router)
 @app.get("/")
 def root():
     return {
-        "message": "GridMind Microgrid Digital Twin API is active.",
+        "message": "GridGenie Microgrid Digital Twin API is active.",
         "documentation": "/docs",
         "health": "/api/health",
         "notice": "System operates as a deterministic physical simulation digital twin for microgrid optimization research.",

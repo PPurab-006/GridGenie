@@ -1,5 +1,5 @@
 /**
- * GridMind API TypeScript definitions
+ * GridGenie API TypeScript definitions
  */
 
 export type ScenarioId = 'normal_day' | 'cloud_shock' | 'evening_peak' | 'stress_test';

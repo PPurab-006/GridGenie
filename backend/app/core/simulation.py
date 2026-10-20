@@ -1,5 +1,5 @@
 """
-Simulation engine for GridMind.
+Simulation engine for GridGenie.
 Generates deterministic, physically grounded 24-hour microgrid time-series data.
 Labeled explicitly as synthetic physical-model data.
 """

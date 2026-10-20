@@ -1,1 +1,1 @@
-"""GridMind Backend Package."""
+"""GridGenie Backend Package."""

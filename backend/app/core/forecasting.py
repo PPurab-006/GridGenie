@@ -1,5 +1,5 @@
 """
-Forecasting module for GridMind.
+Forecasting module for GridGenie.
 Provides transparent, reproducible day-ahead predictions for demand, solar, and wind.
 Uses scikit-learn Ridge regression with cyclical time features, solar geometry proxy,
 and lagged autoregressive inputs. Strictly adheres to chronological training without future data leakage.

@@ -85,7 +85,7 @@ export const AssetDetailPanel: React.FC<AssetDetailPanelProps> = ({
             { label: 'Round-Trip Efficiency', value: `${Math.round(config.battery.charge_efficiency * config.battery.discharge_efficiency * 100)}%` },
           ],
           explanation: isChg
-            ? `GridMind is charging the battery at ${step.battery_charge_kw.toFixed(1)} kW, buffering surplus zero-marginal-cost renewable energy to prevent curtailment.`
+            ? `GridGenie is charging the battery at ${step.battery_charge_kw.toFixed(1)} kW, buffering surplus zero-marginal-cost renewable energy to prevent curtailment.`
             : isDis
             ? `Discharging ${step.battery_discharge_kw.toFixed(1)} kW to offset high-tariff peak grid power ($${step.grid_price.toFixed(2)}/kWh), protecting the operating budget.`
             : `Battery is on standby at ${soc}% SoC (${energy.toFixed(1)} kWh). Held in reserve for forecasted evening peak demand.`,

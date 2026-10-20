@@ -12,7 +12,7 @@ def test_health_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert "GridMind" in data["system"]
+    assert "GridGenie" in data["system"]
 
 
 def test_scenarios_endpoint():

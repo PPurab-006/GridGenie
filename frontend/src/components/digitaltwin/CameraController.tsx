@@ -108,9 +108,20 @@ export const CameraController: React.FC<CameraControllerProps> = ({
     animRef.current.startPos.copy(camera.position);
     animRef.current.startTarget.copy(controls.target);
 
-    // Destination
-    animRef.current.endPos.set(...preset.position);
-    animRef.current.endTarget.set(...preset.target);
+    // Destination with responsive mobile framing offset
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const targetVec = new THREE.Vector3(...preset.target);
+    const posVec = new THREE.Vector3(...preset.position);
+
+    if (isMobile) {
+      // On narrow portrait viewports, extend camera distance along sightline
+      // so entire asset (including turbine blades and tower) and overview fit comfortably
+      const offset = posVec.clone().sub(targetVec).multiplyScalar(1.28);
+      posVec.copy(targetVec).add(offset);
+    }
+
+    animRef.current.endPos.copy(posVec);
+    animRef.current.endTarget.copy(targetVec);
 
     animRef.current.duration = preset.duration;
     animRef.current.startTime = performance.now();

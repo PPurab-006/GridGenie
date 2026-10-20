@@ -1,5 +1,5 @@
 """
-FastAPI router endpoints for GridMind.
+FastAPI router endpoints for GridGenie.
 Provides REST APIs for simulation, forecasting, dispatch optimization, strategy comparison, and benchmarks.
 """
 from datetime import datetime, timezone
@@ -30,7 +30,7 @@ def health_check() -> Dict[str, str]:
     """Health check endpoint."""
     return {
         "status": "healthy",
-        "system": "GridMind Microgrid Digital Twin",
+        "system": "GridGenie Microgrid Digital Twin",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "2.0.0",
     }
@@ -81,7 +81,7 @@ def dispatch_optimize(config: MicrogridConfig) -> StrategyResult:
 @router.post("/compare", response_model=ComparisonResult)
 def compare_dispatch_strategies(config: MicrogridConfig) -> ComparisonResult:
     """
-    Runs both Baseline and GridMind Two-Stage Optimizer on identical scenario inputs and parameters,
+    Runs both Baseline and GridGenie Two-Stage Optimizer on identical scenario inputs and parameters,
     computing side-by-side KPIs, cost savings, carbon reduction, and peak shaving.
     """
     actual_steps = generate_scenario_timeseries(config)
@@ -107,7 +107,7 @@ def compare_dispatch_strategies(config: MicrogridConfig) -> ComparisonResult:
 @router.get("/benchmarks", response_model=BenchmarkTableResponse)
 def get_benchmarks(seed: int = 42) -> BenchmarkTableResponse:
     """
-    Runs both Baseline and GridMind Optimizer across all 4 operational scenarios:
+    Runs both Baseline and GridGenie Optimizer across all 4 operational scenarios:
     1. Normal Day
     2. Cloud Shock
     3. Evening Peak

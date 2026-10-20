@@ -1,9 +1,9 @@
-# GridMind System Architecture Document
+# GridGenie System Architecture Document
 **IEEE ClimateChain Global Hackathon**
 
 ## 1. Electrical & Digital Twin Topology
 
-The GridMind microgrid operates as a modern AC-coupled commercial microgrid interconnected at 480V three-phase:
+The GridGenie microgrid operates as a modern AC-coupled commercial microgrid interconnected at 480V three-phase:
 
 ```
                       +-----------------------------+

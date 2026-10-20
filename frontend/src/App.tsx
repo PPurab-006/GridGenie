@@ -205,7 +205,7 @@ export const App: React.FC = () => {
               <Globe2 className="w-3.5 h-3.5" />
             </div>
             <span className="font-medium text-[#171E1A]">
-              GridMind V3 &bull; IEEE ClimateChain Global Hackathon Submission
+              GridGenie V3 &bull; IEEE ClimateChain Global Hackathon Submission
             </span>
           </div>
 

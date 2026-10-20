@@ -1,4 +1,4 @@
-# GridMind Intelligence & Architecture Audit Report
+# GridGenie Intelligence & Architecture Audit Report
 **IEEE ClimateChain Global Hackathon — Phase 1 Technical Audit**
 
 ---

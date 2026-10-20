@@ -78,7 +78,7 @@ export const LiveOperationsView: React.FC<LiveOperationsViewProps> = ({
 
     if (isDischarging) {
       if (currentStep.grid_price >= 0.2) {
-        return `GridMind is discharging the battery at ${currentStep.battery_discharge_kw.toFixed(1)} kW to avoid expensive peak electricity prices ($${currentStep.grid_price.toFixed(2)}/kWh), protecting your operating budget.`;
+        return `GridGenie is discharging the battery at ${currentStep.battery_discharge_kw.toFixed(1)} kW to avoid expensive peak electricity prices ($${currentStep.grid_price.toFixed(2)}/kWh), protecting your operating budget.`;
       }
       return `The battery is discharging ${currentStep.battery_discharge_kw.toFixed(1)} kW to support facility demand alongside local renewables.`;
     }
@@ -126,7 +126,7 @@ export const LiveOperationsView: React.FC<LiveOperationsViewProps> = ({
             See where your energy goes.
           </h1>
           <p className="text-sm sm:text-base text-[#4A5B52] mt-1.5 max-w-2xl leading-relaxed">
-            GridMind simulates renewable generation, battery storage, and electricity demand to find
+            GridGenie simulates renewable generation, battery storage, and electricity demand to find
             better operating decisions in real time.
           </p>
         </div>
@@ -142,7 +142,7 @@ export const LiveOperationsView: React.FC<LiveOperationsViewProps> = ({
       </div>
 
       {/* 2. Central 3D Digital Twin (Full-width cinematic exploration canvas) */}
-      <div className="w-full">
+      <div className="w-full relative z-0 isolate">
         <MicrogridScene
           step={currentStep}
           config={config}

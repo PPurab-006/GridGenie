@@ -1,5 +1,5 @@
 """
-GridMind Pydantic data models and schemas.
+GridGenie Pydantic data models and schemas.
 """
 from enum import Enum
 from typing import List, Optional

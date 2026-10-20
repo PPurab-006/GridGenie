@@ -1,4 +1,4 @@
-# GridMind V3: The Living Microgrid
+# GridGenie V3: The Living Microgrid
 > **IEEE ClimateChain Global Hackathon Submission**  
 > *An interactive 3D renewable-energy digital twin, machine learning forecaster, and constrained dispatch optimizer.*
 
@@ -14,7 +14,7 @@
 
 Commercial and institutional microgrids face extreme volatility from weather-dependent solar and wind generation, dynamic Time-of-Use (TOU) utility rates, and peaker plant carbon spikes. Naive rule-based controllers deplete battery storage prematurely before expensive evening peaks.
 
-**GridMind V3** transforms complex power systems engineering into an interactive, art-directed **3D Renewable-Energy Digital Twin**:
+**GridGenie V3** transforms complex power systems engineering into an interactive, art-directed **3D Renewable-Energy Digital Twin**:
 - **"See where your energy goes"**: Architectural visualization of solar arrays, rotating wind turbines, modular battery storage, a commercial facility, and the utility grid.
 - **Physical 3D Energy Streams**: High-visibility animated conduits with glowing particles moving in the real-time direction of power flow, with speed proportional to power magnitude.
 - **Two-Stage Dispatch Architecture**: Eliminates look-ahead leakage by solving the day-ahead plan on ML forecasts and executing physical balancing on realized actuals.
@@ -67,12 +67,12 @@ Evaluated on identical 24-hour profiles under genuine two-stage forecast-driven 
 
 | Scenario | Strategy | Operating Cost ($) | Cost Savings ($ / %) | Emissions (kg CO₂) | CO₂ Avoided (%) | Peak Grid Draw (kW) | Reliability |
 |---|---|---|---|---|---|---|---|
-| **Normal Operating Day** | Baseline<br>**GridMind** | $85.41<br>**$74.42** | **-$10.99 (-12.9%)** | 157.7 kg<br>**146.1 kg** | **-7.4%** | 38.5 kW<br>56.9 kW* | **100% Reliable** (0.0 kWh unserved) |
-| **Cloud Shock Event** | Baseline<br>**GridMind** | $156.84<br>**$151.33** | **-$5.51 (-3.5%)** | 279.1 kg<br>**276.2 kg** | **-1.1%** | 59.1 kW<br>63.0 kW | **100% Reliable** (0.0 kWh unserved) |
-| **Evening Demand Surge** | Baseline<br>**GridMind** | $209.93<br>**$195.93** | **-$14.00 (-6.7%)** | 374.7 kg<br>**358.2 kg** | **-4.4%** | 88.9 kW<br>88.9 kW | **100% Reliable** (0.0 kWh unserved) |
-| **Low-Renewables Stress** | Baseline<br>**GridMind** | $445.85<br>**$431.14** | **-$14.71 (-3.3%)** | 797.8 kg<br>**783.4 kg** | **-1.8%** | 99.0 kW<br>99.0 kW | **100% Reliable** (0.0 kWh unserved) |
+| **Normal Operating Day** | Baseline<br>**GridGenie** | $85.41<br>**$74.42** | **-$10.99 (-12.9%)** | 157.7 kg<br>**146.1 kg** | **-7.4%** | 38.5 kW<br>56.9 kW* | **100% Reliable** (0.0 kWh unserved) |
+| **Cloud Shock Event** | Baseline<br>**GridGenie** | $156.84<br>**$151.33** | **-$5.51 (-3.5%)** | 279.1 kg<br>**276.2 kg** | **-1.1%** | 59.1 kW<br>63.0 kW | **100% Reliable** (0.0 kWh unserved) |
+| **Evening Demand Surge** | Baseline<br>**GridGenie** | $209.93<br>**$195.93** | **-$14.00 (-6.7%)** | 374.7 kg<br>**358.2 kg** | **-4.4%** | 88.9 kW<br>88.9 kW | **100% Reliable** (0.0 kWh unserved) |
+| **Low-Renewables Stress** | Baseline<br>**GridGenie** | $445.85<br>**$431.14** | **-$14.71 (-3.3%)** | 797.8 kg<br>**783.4 kg** | **-1.8%** | 99.0 kW<br>99.0 kW | **100% Reliable** (0.0 kWh unserved) |
 
-*\*Scientific Dispatch Insight*: In Normal Day, GridMind's peak import rises during early morning off-peak hours (02:00-05:00) because the optimizer opportunistically pre-charges the battery at the cheap $0.12/kWh off-peak rate to completely avoid importing during the $0.38/kWh peak period.
+*\*Scientific Dispatch Insight*: In Normal Day, GridGenie's peak import rises during early morning off-peak hours (02:00-05:00) because the optimizer opportunistically pre-charges the battery at the cheap $0.12/kWh off-peak rate to completely avoid importing during the $0.38/kWh peak period.
 
 ---
 
@@ -110,7 +110,7 @@ Evaluated on identical 24-hour profiles under genuine two-stage forecast-driven 
 
 ## 6. Hackathon Demonstration Walkthrough
 
-When presenting GridMind to hackathon judges, follow this sequence:
+When presenting GridGenie to hackathon judges, follow this sequence:
 
 1. **The Visual Story (Live Operations View)**:
    - Point to the 3D digital twin: *"This is a living microgrid. Notice the solar farm, wind turbines with live rotating blades, battery storage containers with real-time SoC light bars, and facility demand."*

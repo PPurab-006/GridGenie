@@ -1,5 +1,5 @@
 """
-Scientific metrics and performance evaluation module for GridMind.
+Scientific metrics and performance evaluation module for GridGenie.
 Guarantees consistent unit math and graceful handling of edge cases (zero demand, zero emissions, etc.).
 """
 from typing import List

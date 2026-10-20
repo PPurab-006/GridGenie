@@ -223,21 +223,34 @@ export const CinematicInspectionOverlay: React.FC<CinematicInspectionOverlayProp
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute top-4 left-4 z-20 w-80 sm:w-96 bg-[#FAF8F5]/94 backdrop-blur-md border border-[#D5E0D7] shadow-xl rounded-2xl p-5 animate-in fade-in slide-in-from-left-4 duration-300 pointer-events-auto select-none"
+      onPointerDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      style={{ touchAction: 'pan-y' }}
+      className="z-30 pointer-events-auto select-none bg-[#FAF8F5] border border-[#D5E0D7] shadow-2xl rounded-2xl p-4 sm:p-5 animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-left-4 duration-300 sm:absolute sm:top-4 sm:left-4 sm:w-96 sm:max-w-sm sm:max-h-[85vh] sm:overflow-y-auto max-sm:fixed max-sm:inset-x-2 max-sm:bottom-2 max-sm:top-auto max-sm:w-auto max-sm:max-h-[60vh] max-sm:overflow-y-auto"
     >
       {/* Top Bar: Return to Overview Button + Escape key badge */}
-      <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-[#E3DED2]">
+      <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#E3DED2]">
         <button
           onClick={onBackToOverview}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1D3D2D] hover:bg-[#28533D] text-[#FAF8F5] text-xs font-semibold shadow-sm transition-all hover:gap-2.5 active:scale-95"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1D3D2D] hover:bg-[#28533D] text-[#FAF8F5] text-xs font-semibold shadow-sm transition-all hover:gap-2.5 active:scale-95 touch-manipulation min-h-[36px]"
+          aria-label="Return to Overview"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to overview</span>
         </button>
 
-        <span className="text-[10px] text-[#788A80] font-mono bg-[#EFECE4] px-2 py-0.5 rounded border border-[#E0DBCF]">
-          ESC
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="hidden sm:inline-block text-[10px] text-[#788A80] font-mono bg-[#EFECE4] px-2 py-0.5 rounded border border-[#E0DBCF]">
+            ESC
+          </span>
+          <button
+            onClick={onBackToOverview}
+            className="sm:hidden text-xs text-[#788A80] hover:text-[#171E1A] p-1.5 rounded-md hover:bg-[#EAE6DB] font-medium"
+            aria-label="Close"
+          >
+            Close
+          </button>
+        </div>
       </div>
 
       {/* Asset Title & Category */}

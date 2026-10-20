@@ -123,7 +123,16 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
 
   if (webglError || viewMode === '2d') {
     return (
-      <div className="relative w-full h-[520px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#FAF8F5]">
+      <div className="relative w-full h-[500px] sm:h-[560px] lg:h-[620px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#FAF8F5] shadow-sm isolate z-0">
+        {/* Inspection HUD Overlay (active in both 2D and 3D modes) */}
+        {selectedAsset && (
+          <CinematicInspectionOverlay
+            assetId={selectedAsset}
+            step={step}
+            config={config}
+            onBackToOverview={() => onSelectAsset(null)}
+          />
+        )}
         <FallbackDigitalTwin
           step={step}
           config={config}
@@ -133,7 +142,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
         {onToggleViewMode && (
           <button
             onClick={onToggleViewMode}
-            className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-lg bg-[#FAF8F5] border border-[#D5E0D7] text-xs font-medium text-[#171E1A] shadow-sm hover:bg-[#F0EDE4] flex items-center gap-1.5 transition-colors"
+            className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-lg bg-[#FAF8F5] border border-[#D5E0D7] text-xs font-medium text-[#171E1A] shadow-sm hover:bg-[#F0EDE4] flex items-center gap-1.5 transition-colors pointer-events-auto"
           >
             <Layers className="w-3.5 h-3.5 text-[#5D7C6C]" />
             Switch to 3D View
@@ -144,7 +153,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
   }
 
   return (
-    <div className="relative w-full h-[560px] lg:h-[620px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#F3F0E6] shadow-sm">
+    <div className="relative w-full h-[500px] sm:h-[560px] lg:h-[620px] rounded-2xl overflow-hidden border border-[#D5E0D7] bg-[#F3F0E6] shadow-sm isolate z-0">
       {/* 1. Cinematic Inspection HUD Overlay (Docked in upper-left quadrant beside subject) */}
       {selectedAsset && (
         <CinematicInspectionOverlay
@@ -158,7 +167,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
       {/* 2. Top-Right 3D Controls HUD */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-[#FAF8F5]/92 backdrop-blur-md p-1.5 rounded-xl border border-[#D5E0D7] shadow-sm pointer-events-auto"
+        className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-[#FAF8F5]/92 backdrop-blur-md p-1.5 rounded-xl border border-[#D5E0D7] shadow-sm pointer-events-auto"
       >
         <button
           onClick={handleZoomIn}
@@ -239,6 +248,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
             solarKw={step.solar_kw}
             capacityKw={config.solar_capacity_kw}
             isSelected={selectedAsset === 'solar'}
+            isInspectionMode={selectedAsset !== null}
             onSelect={() => onSelectAsset(selectedAsset === 'solar' ? null : 'solar')}
           />
 
@@ -247,6 +257,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
             windKw={step.wind_kw}
             capacityKw={config.wind_capacity_kw}
             isSelected={selectedAsset === 'wind'}
+            isInspectionMode={selectedAsset !== null}
             onSelect={() => onSelectAsset(selectedAsset === 'wind' ? null : 'wind')}
           />
 
@@ -258,6 +269,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
             chargeKw={step.battery_charge_kw}
             dischargeKw={step.battery_discharge_kw}
             isSelected={selectedAsset === 'battery'}
+            isInspectionMode={selectedAsset !== null}
             onSelect={() => onSelectAsset(selectedAsset === 'battery' ? null : 'battery')}
           />
 
@@ -266,6 +278,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
             demandKw={step.demand_kw}
             unservedKw={step.unserved_demand_kw}
             isSelected={selectedAsset === 'facility'}
+            isInspectionMode={selectedAsset !== null}
             onSelect={() => onSelectAsset(selectedAsset === 'facility' ? null : 'facility')}
           />
 
@@ -276,6 +289,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
             gridPrice={step.grid_price}
             carbonIntensity={step.grid_carbon_intensity}
             isSelected={selectedAsset === 'grid'}
+            isInspectionMode={selectedAsset !== null}
             onSelect={() => onSelectAsset(selectedAsset === 'grid' ? null : 'grid')}
           />
 
@@ -288,6 +302,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
             demandKw={step.demand_kw}
             gridImportKw={step.grid_import_kw}
             gridExportKw={step.grid_export_kw}
+            selectedAsset={selectedAsset}
           />
         </Suspense>
       </Canvas>

@@ -1,5 +1,5 @@
 """
-Baseline dispatch strategy for GridMind.
+Baseline dispatch strategy for GridGenie.
 Transparent, rule-based, renewable-first heuristic without look-ahead optimization.
 Serves as the benchmark to evaluate the economic and ecological value of optimization.
 """

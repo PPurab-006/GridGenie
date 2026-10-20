@@ -8,6 +8,7 @@ interface SubstationAssetProps {
   gridPrice: number;
   carbonIntensity: number;
   isSelected: boolean;
+  isInspectionMode?: boolean;
   onSelect: () => void;
 }
 
@@ -17,6 +18,7 @@ export const SubstationAsset: React.FC<SubstationAssetProps> = ({
   gridPrice,
   carbonIntensity,
   isSelected,
+  isInspectionMode = false,
   onSelect,
 }) => {
   const [hovered, setHovered] = useState(false);
@@ -147,17 +149,17 @@ export const SubstationAsset: React.FC<SubstationAssetProps> = ({
       )}
 
       {/* Floating 3D Label & Value Tag (hidden during close-up inspection) */}
-      {!isSelected && (
-        <Html position={[0, 3.2, 0]} center distanceFactor={14}>
+      {!isSelected && !isInspectionMode && (
+        <Html position={[0, 1.8, 0]} center distanceFactor={14} zIndexRange={[5, 0]} pointerEvents="none">
           <div
             onClick={(e) => {
               e.stopPropagation();
               onSelect();
             }}
-            className={`cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border backdrop-blur-sm flex items-center gap-2 ${
+            className={`pointer-events-auto cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border backdrop-blur-sm flex items-center gap-2 ${
               hovered
                 ? 'bg-[#FAF8F5] text-[#171E1A] border-[#1D3D2D] scale-105'
-                : 'bg-[#FAF8F5]/90 text-[#171E1A] border-[#DCD5C5]'
+                : 'bg-[#FAF8F5]/92 text-[#171E1A] border-[#DCD5C5]'
             }`}
           >
             <div

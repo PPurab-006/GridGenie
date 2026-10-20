@@ -82,7 +82,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-[#FAF8F5] border border-[#D5E0D7] rounded-2xl max-w-xl w-full p-6 shadow-2xl relative">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#E3DED2]">

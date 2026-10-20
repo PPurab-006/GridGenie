@@ -44,7 +44,7 @@ export const StrategyComparison: React.FC<StrategyComparisonProps> = ({
         <div>
           <h3 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
             <Scale className="w-4 h-4 text-[#00E599]" />
-            Strategy Evaluation: Baseline Heuristic vs. GridMind LP Optimizer
+            Strategy Evaluation: Baseline Heuristic vs. GridGenie LP Optimizer
           </h3>
           <p className="text-xs text-[#94A3B8]">
             Rigorous evaluation against identical load, solar, wind, battery, and pricing profiles
@@ -66,7 +66,7 @@ export const StrategyComparison: React.FC<StrategyComparisonProps> = ({
                 <tr className="border-b border-[#1A263D] text-[#94A3B8]">
                   <th className="pb-2 font-medium">Metric</th>
                   <th className="pb-2 font-medium">Baseline</th>
-                  <th className="pb-2 font-medium">GridMind</th>
+                  <th className="pb-2 font-medium">GridGenie</th>
                   <th className="pb-2 font-medium text-right">Delta / Benefit</th>
                 </tr>
               </thead>
@@ -136,7 +136,7 @@ export const StrategyComparison: React.FC<StrategyComparisonProps> = ({
           </div>
 
           <div className="mt-3 p-2.5 bg-[#141D30] border border-[#1A263D] rounded text-[11px] text-[#94A3B8] leading-relaxed">
-            <strong className="text-white">Scientific Dispatch Insight:</strong> The baseline strategy dispatches battery storage naively as soon as any deficit occurs. GridMind's look-ahead LP optimizer pre-charges storage during clean off-peak pricing and reserves capacity to displace expensive utility peakers during peak hours.
+            <strong className="text-white">Scientific Dispatch Insight:</strong> The baseline strategy dispatches battery storage naively as soon as any deficit occurs. GridGenie's look-ahead LP optimizer pre-charges storage during clean off-peak pricing and reserves capacity to displace expensive utility peakers during peak hours.
           </div>
         </div>
 

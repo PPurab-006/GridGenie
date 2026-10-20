@@ -80,7 +80,7 @@ export const BenchmarkLab: React.FC<BenchmarkLabProps> = ({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `gridmind_ieee_benchmark_report_seed${currentSeed}.csv`);
+    link.setAttribute('download', `gridgenie_ieee_benchmark_report_seed${currentSeed}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
