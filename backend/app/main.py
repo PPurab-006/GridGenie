@@ -26,17 +26,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount routes under /api (standard) and root (for Vercel serverless functions)
+import os
+from fastapi.staticfiles import StaticFiles
+
+# Mount API routes
 app.include_router(router, prefix="/api")
-app.include_router(router)
 
-
-@app.get("/")
-@app.get("/api")
-def root():
-    return {
-        "message": "GridGenie Microgrid Digital Twin API is active.",
-        "documentation": "/docs",
-        "health": "/api/health",
-        "notice": "System operates as a deterministic physical simulation digital twin for microgrid optimization research.",
-    }
+# If frontend/dist exists, mount it to serve the production React app
+frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+if os.path.exists(frontend_dist):
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="static")
+else:
+    @app.get("/")
+    def root():
+        return {
+            "message": "GridGenie Microgrid Digital Twin API is active.",
+            "documentation": "/docs",
+            "health": "/api/health",
+            "notice": "System operates as a deterministic physical simulation digital twin for microgrid optimization research.",
+        }
