@@ -138,10 +138,10 @@ export const SolarAsset: React.FC<SolarAssetProps> = ({
               e.stopPropagation();
               onSelect();
             }}
-            className={`pointer-events-auto cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border backdrop-blur-sm flex items-center gap-2 ${
+            className={`pointer-events-auto cursor-pointer transition-all duration-200 select-none px-2.5 py-1.5 rounded-lg shadow-md border flex items-center gap-2 ${
               hovered
-                ? 'bg-[#FAF8F5] text-[#171E1A] border-[#1D3D2D] scale-105'
-                : 'bg-[#FAF8F5]/92 text-[#171E1A] border-[#DCD5C5]'
+                ? 'bg-white text-[#171E1A] border-[#1D3D2D] scale-105 shadow-lg'
+                : 'bg-[#FAF8F5] text-[#171E1A] border-[#D5E0D7]'
             }`}
           >
             <div

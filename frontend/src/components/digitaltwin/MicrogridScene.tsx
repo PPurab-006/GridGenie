@@ -167,7 +167,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
       {/* 2. Top-Right 3D Controls HUD */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-[#FAF8F5]/92 backdrop-blur-md p-1.5 rounded-xl border border-[#D5E0D7] shadow-sm pointer-events-auto"
+        className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-[#FAF8F5] p-1.5 rounded-xl border border-[#D5E0D7] shadow-md pointer-events-auto"
       >
         <button
           onClick={handleZoomIn}
@@ -207,7 +207,7 @@ export const MicrogridScene: React.FC<MicrogridSceneProps> = ({
 
       {/* 3. Bottom-Left Camera Guidance Prompt (Overview mode only) */}
       {!selectedAsset && (
-        <div className="absolute bottom-4 left-4 z-10 pointer-events-none select-none text-[11px] text-[#5D7C6C] bg-[#FAF8F5]/85 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#D5E0D7] shadow-sm">
+        <div className="absolute bottom-4 left-4 z-10 pointer-events-none select-none text-[11px] text-[#5D7C6C] bg-[#FAF8F5] px-3 py-1.5 rounded-lg border border-[#D5E0D7] shadow-md">
           Click any 3D asset for cinematic inspection &bull; Drag to orbit &bull; Scroll to zoom
         </div>
       )}

@@ -126,7 +126,7 @@ export const FallbackDigitalTwin: React.FC<FallbackDigitalTwinProps> = ({
       {/* 1. HUD Navigation & Pan/Zoom Controls Bar */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-[#FAF8F5]/94 backdrop-blur-md px-2 py-1.5 rounded-xl border border-[#D5E0D7] shadow-sm pointer-events-auto"
+        className="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-[#FAF8F5] px-2 py-1.5 rounded-xl border border-[#D5E0D7] shadow-md pointer-events-auto"
       >
         <button
           onClick={handleZoomIn}
@@ -167,7 +167,7 @@ export const FallbackDigitalTwin: React.FC<FallbackDigitalTwinProps> = ({
       </div>
 
       {/* 2. Bottom Schematic Guidance Prompt */}
-      <div className="absolute bottom-4 left-4 z-10 pointer-events-none select-none text-[11px] text-[#5D7C6C] bg-[#FAF8F5]/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-[#D5E0D7] shadow-sm hidden sm:block">
+      <div className="absolute bottom-4 left-4 z-10 pointer-events-none select-none text-[11px] text-[#5D7C6C] bg-[#FAF8F5] px-3 py-1.5 rounded-lg border border-[#D5E0D7] shadow-md hidden sm:block">
         Click any node to inspect &bull; Drag background to pan &bull; Live directional energy flow
       </div>
 

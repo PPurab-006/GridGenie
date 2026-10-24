@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSettings,
 }) => {
   return (
-    <header className="border-b border-[#E3DED2] bg-[#FAF8F5]/98 backdrop-blur-md sticky top-0 z-50 px-3 sm:px-6 lg:px-8 py-2.5 shadow-sm">
+    <header className="border-b border-[#E3DED2] bg-[#FAF8F5] sticky top-0 z-50 px-3 sm:px-6 lg:px-8 py-2.5 shadow-sm">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3">
         {/* Top/Left: Brand & View Navigation */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
