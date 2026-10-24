@@ -85,6 +85,8 @@ Extracted sample frames across critical transitions (`00:15`, `00:45`, `01:15`, 
 
 The following deliverables are organized within the `demo/` directory:
 - [GridGenie_Demo.mp4](file:///home/purab/Purab/Projects/competitions/ieee/demo/GridGenie_Demo.mp4): Final 1080p master video with burned-in subtitles and synchronized audio.
+- [thumbnail.png](file:///home/purab/Purab/Projects/competitions/ieee/demo/thumbnail.png): Official 1080p high-impact presentation thumbnail (Cinematic 3D concept edition).
+- [thumbnail_live_app.png](file:///home/purab/Purab/Projects/competitions/ieee/demo/thumbnail_live_app.png): 1080p alternative thumbnail featuring the real in-app 3D canvas viewport.
 - [GridGenie_Demo.srt](file:///home/purab/Purab/Projects/competitions/ieee/demo/GridGenie_Demo.srt): Synchronized English subtitle file.
 - [narration_script.md](file:///home/purab/Purab/Projects/competitions/ieee/demo/narration_script.md): Full scene-by-scene script with timestamps and visual directions.
 - [qa_report.md](file:///home/purab/Purab/Projects/competitions/ieee/demo/qa_report.md): This quality assurance report.
