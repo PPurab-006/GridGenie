@@ -1,0 +1,112 @@
+1
+00:00:03,600 --> 00:00:13,000
+Welcome to GridGenie, an autonomous renewable-energy microgrid digital twin and dispatch optimizer built for the IEEE ClimateChain Global Hackathon.
+
+2
+00:00:12,950 --> 00:00:21,050
+Modern microgrids balance rooftop solar, wind turbines, battery energy storage, and dynamic utility tariffs.
+
+3
+00:00:21,050 --> 00:00:31,687
+Without look-ahead intelligence, rule-based systems make costly dispatch mistakes, leaving batteries depleted during expensive peak tariff surges and curtailing clean energy.
+
+4
+00:00:31,687 --> 00:00:35,750
+GridGenie solves this with physics-constrained optimization.
+
+5
+00:00:35,904 --> 00:00:41,391
+At the core of GridGenie is an interactive 3D digital twin rendered in real time.
+
+6
+00:00:41,341 --> 00:00:48,229
+Rather than burying operators in dense tables, the miniature landscape provides immediate physical intuition.
+
+7
+00:00:48,229 --> 00:00:52,779
+Selecting any asset initiates a cinematic camera transition.
+
+8
+00:00:52,779 --> 00:01:06,904
+We can inspect the eighty-kilowatt solar array, examine real-time generation from the wind turbines, check the one-hundred kilowatt-hour battery storage system, audit commercial building loads, and monitor interconnection with the utility grid.
+
+9
+00:01:07,056 --> 00:01:13,593
+The live operations dashboard allows operators to scrub through a full twenty-four-hour operating horizon.
+
+10
+00:01:13,543 --> 00:01:25,281
+Animated energy flows visualize power dynamics: green streams indicate surplus clean generation charging the battery, while cyan streams show storage discharging to meet evening demand.
+
+11
+00:01:25,281 --> 00:01:35,206
+At every time step, physical conservation laws are strictly enforced, ensuring generation, storage, and utility imports perfectly match load.
+
+12
+00:01:35,376 --> 00:01:41,338
+To validate resilience, GridGenie includes realistic operational stress scenarios.
+
+13
+00:01:41,288 --> 00:01:49,738
+Here, we activate the Cloud Shock Event, simulating a severe storm front that cuts solar output by seventy-five percent at midday.
+
+14
+00:01:49,738 --> 00:01:54,201
+A naive controller would immediately draw expensive grid power.
+
+15
+00:01:54,201 --> 00:02:03,913
+GridGenie detects the sudden deficit, reserves battery capacity, and maintains critical commercial loads without violating voltage or ramp-rate limits.
+
+16
+00:02:04,080 --> 00:02:11,842
+In the Performance Lab, GridGenie benchmarks its look-ahead optimizer directly against industry-standard heuristic dispatch.
+
+17
+00:02:11,792 --> 00:02:20,242
+The live HiGHS linear programming solver achieves over twelve percent cost savings and a forty-five percent reduction in peak grid demand.
+
+18
+00:02:20,242 --> 00:02:28,630
+Rule-based heuristics greedily discharge in the morning, leaving storage empty when utility tariffs spike to thirty-eight cents per kilowatt-hour.
+
+19
+00:02:28,630 --> 00:02:35,117
+GridGenie pre-charges during clean surplus hours and dispatches precisely during peak tariff windows.
+
+20
+00:02:35,280 --> 00:02:39,192
+Autonomous dispatch requires trustworthy predictions.
+
+21
+00:02:39,142 --> 00:02:49,517
+In the Forecast Lab, scikit-learn Ridge regression models predict twenty-four-hour solar irradiance, wind gusts, commercial building load, and wholesale tariffs.
+
+22
+00:02:49,517 --> 00:03:00,755
+By auditing model error metrics and comparing them against persistent baselines, operators understand forecast uncertainty before feeding predictions into the downstream optimization solver.
+
+23
+00:03:00,912 --> 00:03:05,724
+GridGenie gives operators granular control over physical parameters.
+
+24
+00:03:05,674 --> 00:03:14,049
+Through the configuration drawer, users can adjust battery degradation factors, interconnection limits, and multi-objective weights.
+
+25
+00:03:14,049 --> 00:03:25,962
+By dialing up the carbon penalty, the optimizer transitions from pure cost minimization to aggressive decarbonization, prioritizing stored renewable energy over fossil-fueled grid imports.
+
+26
+00:03:26,112 --> 00:03:33,099
+GridGenie bridges the gap between complex energy systems engineering and intuitive operational decision-making.
+
+27
+00:03:33,049 --> 00:03:45,349
+By uniting interactive 3D digital twin visualization, machine learning forecasting, and mathematical optimization, GridGenie makes clean, resilient microgrids accessible to everyone.
+
+28
+00:03:45,349 --> 00:03:47,324
+Thank you for watching.
+
