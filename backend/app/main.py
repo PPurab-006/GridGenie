@@ -32,6 +32,7 @@ app.include_router(router)
 
 
 @app.get("/")
+@app.get("/api")
 def root():
     return {
         "message": "GridGenie Microgrid Digital Twin API is active.",
