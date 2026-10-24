@@ -26,6 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount routes under /api (standard) and root (for Vercel serverless functions)
+app.include_router(router, prefix="/api")
 app.include_router(router)
 
 

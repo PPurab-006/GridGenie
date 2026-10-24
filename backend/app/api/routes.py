@@ -22,7 +22,7 @@ from ..core.baseline import run_baseline_dispatch
 from ..core.optimizer import solve_optimal_dispatch
 from ..core.metrics import compare_strategies
 
-router = APIRouter(prefix="/api", tags=["Microgrid Operations"])
+router = APIRouter(tags=["Microgrid Operations"])
 
 
 @router.get("/health")
